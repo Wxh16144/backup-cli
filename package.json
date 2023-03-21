@@ -1,19 +1,18 @@
 {
-  "name": "@template-pro/start-cli",
+  "name": "@wuxh/backup-cli",
   "version": "0.0.0",
-  "private": true,
   "description": "",
-  "homepage": "https://github.com/template-pro/start-cli",
+  "homepage": "https://github.com/Wxh16144/backup-cli",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/template-pro/start-cli.git"
+    "url": "git+https://github.com/Wxh16144/backup-cli.git"
   },
   "license": "MIT",
   "author": "Wuxh <wxh16144@qq.com>",
   "type": "module",
   "main": "index.js",
   "bin": {
-    "template-start-cli": "index.js"
+    "backup-cli": "index.js"
   },
   "files": [
     "index.js",
@@ -35,5 +34,9 @@
   },
   "engines": {
     "node": "^14.18.0 || >=16.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }
