@@ -79,7 +79,7 @@ name = Git
 
 ## 贡献&调试
 
-TODO
+在 VSCode 中按下 `F5`进行 debugger 即可, [launch.json](./.vscode/launch.json)
 
 ## LICENSE
 
