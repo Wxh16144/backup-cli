@@ -5,7 +5,7 @@ import backup from "./backup";
 import type { Argv } from "./type";
 import type { LoggerType } from './logger'
 import { getAppConfigs, getApps, loadAppsConfigs } from './list'
-import { getConfig, resolveHome } from "./util";
+import { divider, getConfig, resolveHome } from "./util";
 
 interface Options {
   logger: LoggerType;
@@ -50,13 +50,18 @@ async function main(args: Argv, { logger }: Options) {
     storage: { directory: storagePath, }
   });
 
+  const appsConfigs = await loadAppsConfigs(needBackupApps, { logger });
+
   if (args.config) {
     console.clear();
     console.log(JSON.stringify(finalConfig, null, 2));
+    console.log(divider());
+    appsConfigs.forEach(appConfig => {
+      console.log(JSON.stringify(appConfig, null, 2));
+      console.log(divider());
+    });
     return;
   }
-
-  const appsConfigs = await loadAppsConfigs(needBackupApps, { logger });
 
   for (const appConfig of appsConfigs) {
     logger.info(`Backup ${c.bold(appConfig.application.name)} ...`);

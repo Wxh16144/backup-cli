@@ -37,7 +37,7 @@ async function run(args: Argv = argv) {
     console.log(`
     npx ${c.bold(command)} [options]
     ----------------------------------------
-    -${c.bold('l')}, --list: list all apps. (${c.green('* [name]')}: backup, -: not backup)
+    -${c.bold('l')}, --list: list all apps.
     -${c.bold('f')}, --force: force to backup (overwrite files).
     -${c.bold('c')}, --config: view config.
     -${c.bold('r')}, --restore: restore backup.

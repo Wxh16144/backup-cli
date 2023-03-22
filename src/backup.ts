@@ -45,6 +45,12 @@ async function backupFile(
     }
   }
 
+  const backupFileDirectory = path.dirname(backupFilePath);
+  if (!fs.existsSync(backupFileDirectory)) {
+    logger.debug(`${action} file directory not exists, create it: ${backupFileDirectory}`);
+    fs.ensureDirSync(backupFileDirectory);
+  }
+
   await fs.copyFile(sourceFilePath, backupFilePath);
 
   logger.event(`File ${action} success: ${sourceFilePath} -> ${backupFilePath}`);
