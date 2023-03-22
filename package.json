@@ -22,16 +22,27 @@
     "build": "unbuild",
     "dev": "unbuild --stub",
     "prepublishOnly": "npm run build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepare": "npm run dev"
   },
   "dependencies": {
+    "fast-glob": "^3.2.12",
+    "fs-extra": "^11.1.1",
+    "ini": "^4.0.0",
     "kleur": "^4.1.5",
-    "mri": "^1.2.0"
+    "lodash-es": "^4.17.21",
+    "mri": "^1.2.0",
+    "prompts": "^2.4.2"
   },
   "devDependencies": {
+    "@types/fs-extra": "^11.0.1",
+    "@types/ini": "^1.3.31",
+    "@types/lodash-es": "^4.17.7",
     "@types/node": "^18.11.19",
+    "@types/prompts": "^2.4.3",
     "unbuild": "^1.1.1"
   },
+  "packageManager": "pnpm@7.29.1",
   "engines": {
     "node": "^14.18.0 || >=16.0.0"
   },
