@@ -17,43 +17,48 @@ async function isDirectoryEmpty(dirPath: string) {
 type BackupOptions = {
   logger: LoggerType;
   force?: boolean;
+  restore?: boolean;
 }
 
 async function backupFile(
   sourceFilePath: string,
   backupFilePath: string,
-  { logger, force = false }: BackupOptions
+  { logger, force = false, restore = false }: BackupOptions
 ) {
+
+  const action = restore ? 'restore' : 'backup';
+
   if (fs.existsSync(backupFilePath) && !force) {
-    logger.warn(`backup file ${backupFilePath} already exists`);
+    logger.warn(`${action} file ${backupFilePath} already exists`);
     const response = await prompts({
       type: 'confirm',
       name: 'overwrite',
-      message: `Backup file ${c.yellow(backupFilePath)} already exists, do you want to overwrite it?`,
+      message: `${action} file ${c.yellow(backupFilePath)} already exists, do you want to overwrite it?`,
       initial: false,
     });
 
     if (response.overwrite) {
-      logger.debug('backup file already exists, overwrite');
+      logger.debug(`${action} file already exists, overwrite`);
     } else {
-      logger.debug('backup file already exists, skip');
+      logger.debug(`${action} file already exists, skip`);
       return;
     }
   }
 
   await fs.copyFile(sourceFilePath, backupFilePath);
 
-  logger.event(`File backup success: ${sourceFilePath} -> ${backupFilePath}`);
+  logger.event(`File ${action} success: ${sourceFilePath} -> ${backupFilePath}`);
 }
 
 async function backupDirectory(
   sourceDirectoryPath: string,
   backupDirectoryPath: string,
-  { logger, force = false }: BackupOptions
+  { logger, force = false, restore = false }: BackupOptions
 ) {
+  const action = restore ? 'restore' : 'backup';
 
   if (!fs.existsSync(backupDirectoryPath)) {
-    logger.warn(`Backup directory not exists, create it: ${backupDirectoryPath}`);
+    logger.warn(`${action} directory not exists, create it: ${backupDirectoryPath}`);
     fs.ensureDirSync(backupDirectoryPath);
   }
 
@@ -61,28 +66,28 @@ async function backupDirectory(
     const response = await prompts({
       type: 'confirm',
       name: 'overwrite',
-      message: `Backup directory ${c.yellow(backupDirectoryPath)} not empty, do you want to overwrite it?`,
+      message: `${action} directory ${c.yellow(backupDirectoryPath)} not empty, do you want to overwrite it?`,
       initial: false,
     });
 
     if (response.overwrite) {
-      logger.debug('Backup directory not empty, overwrite');
+      logger.debug(`${action} directory not empty, overwrite`);
     } else {
-      logger.debug('Backup directory not empty, skip');
+      logger.debug(`${action} directory not empty, skip`);
       return;
     }
   }
 
   await fs.copy(sourceDirectoryPath, backupDirectoryPath);
 
-  logger.debug(`Backup directory: ${sourceDirectoryPath} -> ${backupDirectoryPath}`);
+  logger.debug(`${action} directory: ${sourceDirectoryPath} -> ${backupDirectoryPath}`);
 }
 
 
 async function backup(
   appConfig: AppConfig,
   config: Config,
-  { logger, force = false }: BackupOptions
+  { logger, force = false, restore = false }: BackupOptions
 ) {
 
   const configurationFiles = appConfig.configuration_files ?? {};
@@ -98,8 +103,12 @@ async function backup(
 
   for (const [filePath, isBackup] of Object.entries(configurationFiles)) {
     if (isBackup) {
-      const sourceFilePath = resolveHome(filePath);
-      const backupFilePath = resolveHome(path.join(storagePath, filePath));
+      let sourceFilePath = resolveHome(filePath);
+      let backupFilePath = resolveHome(path.join(storagePath, filePath));
+
+      if (restore) {
+        [sourceFilePath, backupFilePath] = [backupFilePath, sourceFilePath];
+      }
 
       if (!fs.existsSync(sourceFilePath)) {
         logger.debug(`the file or directory does not exist: ${sourceFilePath}, no backup is required`);
@@ -118,7 +127,7 @@ async function backup(
         await backupDirectory(
           sourceFilePath,
           backupFilePath,
-          { logger, force }
+          { logger, force, restore }
         );
       }
 
@@ -126,7 +135,7 @@ async function backup(
         await backupFile(
           sourceFilePath,
           backupFilePath,
-          { logger, force }
+          { logger, force, restore }
         );
       }
     }

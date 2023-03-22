@@ -50,7 +50,7 @@ async function main(args: Argv, { logger }: Options) {
     storage: { directory: storagePath, }
   });
 
-  if(args.config) {
+  if (args.config) {
     console.clear();
     console.log(JSON.stringify(finalConfig, null, 2));
     return;
@@ -60,7 +60,15 @@ async function main(args: Argv, { logger }: Options) {
 
   for (const appConfig of appsConfigs) {
     logger.info(`Backup ${c.bold(appConfig.application.name)} ...`);
-    await backup(appConfig, finalConfig, { logger, force: args.force });
+    await backup(
+      appConfig,
+      finalConfig,
+      {
+        logger,
+        force: args.restore ? false : args.force,
+        restore: args.restore,
+      }
+    );
     logger.info(`Backup ${c.bold(appConfig.application.name)} ${c.green('done')}\n`);
   }
 

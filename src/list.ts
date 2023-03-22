@@ -6,6 +6,7 @@ import {
   CONFIG_FILE_EXT,
   CONFIG_DIR_NAME,
   resolveProjectRoot,
+  resolveHome,
 } from './util'
 import type { AppConfig, Config } from './type'
 import type { LoggerType } from './logger'
@@ -18,7 +19,7 @@ export async function getAppConfigs() {
   });
 
   const customApps = await glob.sync(`*${CONFIG_FILE_EXT}`, {
-    cwd: resolveProjectRoot(CONFIG_DIR_NAME),
+    cwd: resolveHome(CONFIG_DIR_NAME),
     deep: 1,
     absolute: true,
   });
