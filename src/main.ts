@@ -1,11 +1,11 @@
 import c from "kleur";
-import fs from "fs";
+import fs from "fs-extra";
 import { merge } from "lodash-es"
+import backup from "./backup";
 import type { Argv } from "./type";
 import type { LoggerType } from './logger'
 import { getAppConfigs, getApps, loadAppsConfigs } from './list'
-import { getConfig, divider, resolveHome, CONFIG_FILE_EXT } from "./util";
-import path from "path";
+import { getConfig, divider, resolveHome } from "./util";
 
 interface Options {
   logger: LoggerType;
@@ -22,14 +22,14 @@ async function main(args: Argv, { logger }: Options) {
   const needBackupAppNames = Object.keys(needBackupApps);
 
   if (args.list) {
-    logger.info(`Found ${appNames.length} apps:`);
+    logger.info(`Found ${appNames.length} apps, ${needBackupAppNames.length} of them need backup:`);
     appNames.forEach(appName => {
       const isBackup = needBackupAppNames.includes(appName);
 
-      // 需要备份的应用前面加上 * 并且使用绿色显示
       const color = isBackup ? c.green : (_: any) => _;
-
-      console.log(color(`     ${isBackup ? "*" : "-"} ${c.bold(appName)}`));
+      const suffix = isBackup ? " (backup)" : c.red(" (ignore)");
+      const prefix = isBackup ? "*" : "-";
+      console.log(color(`     ${prefix} ${c.bold(appName)}${args.debug ? suffix : ''}`));
     });
     return;
   }
@@ -38,11 +38,11 @@ async function main(args: Argv, { logger }: Options) {
     return logger.warn('No apps to backup');
   }
 
-  const { storage: { directory } } = config;
+  const { storage: { directory = "backup" } = {} } = config;
   const storagePath = resolveHome(directory);
   if (!fs.existsSync(storagePath)) {
     logger.warn(`Storage directory not found: ${storagePath}`);
-    fs.mkdirSync(storagePath);
+    fs.ensureDirSync(storagePath);
     logger.info(`Create storage directory: ${storagePath}`);
   }
 
@@ -52,10 +52,14 @@ async function main(args: Argv, { logger }: Options) {
 
   const appsConfigs = await loadAppsConfigs(needBackupApps, { logger });
 
+  for (const appConfig of appsConfigs) {
+    logger.info(`Backup ${c.bold(appConfig.application.name)} ...`);
+    await backup(appConfig, finalConfig, { logger, force: args.force });
+    logger.info(`Backup ${c.bold(appConfig.application.name)} ${c.green('done')}\n`);
+  }
 
   // successful backup finished
-  console.log(args.debug ? divider() : '\n');
-  console.log(c.green(`[${new Date().toLocaleTimeString(undefined, { hour12: false })}] Successful backup finished!`));
+  console.log(c.green().bold(`[${new Date().toLocaleTimeString(undefined, { hour12: false })}] Successful backup finished!`));
 }
 
 export default main;

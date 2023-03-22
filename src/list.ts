@@ -7,7 +7,7 @@ import {
   CONFIG_DIR_NAME,
   resolveProjectRoot,
 } from './util'
-import { Config } from './type'
+import type { AppConfig, Config } from './type'
 import type { LoggerType } from './logger'
 
 export async function getAppConfigs() {
@@ -60,5 +60,5 @@ export async function loadAppsConfigs(
     return config;
   });
 
-  return config;
+  return config as AppConfig[];
 }

@@ -9,6 +9,13 @@ export interface Argv {
   _: string[];
 }
 
+// appConfig
+export interface AppConfig {
+  application: {
+    name: string;
+  }
+  configuration_files: Record<string, boolean>
+}
 
 // config
 type Storage = {

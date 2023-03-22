@@ -36,9 +36,9 @@ async function run(args: Argv = argv) {
     npx ${c.bold(command)} [options]
     ----------------------------------------
     -${c.bold('l')}, --list: list all apps. (${c.green('* [name]')}: backup, -: not backup)
-    -${c.bold('d')}, --debug: show debug info.
     -${c.bold('f')}, --force: force to backup (overwrite files).
     -${c.bold('h')}, --help: show help.
+    -${c.bold('d')}, --debug: show debug info.
     -${c.bold('v')}, --version: show version. ${c.green('v' + pkg.version)}
     ----------------------------------------
     ${c.bold('e.g.')} ${c.green(`${command} -h`)} 

@@ -1,6 +1,6 @@
 import c, { type Color } from "kleur";
 
-type LogLevel = 'info' | 'warn' | 'debug' | 'error';
+type LogLevel = 'info' | 'warn' | 'debug' | 'error' | 'event';
 
 function generateLogger(level: LogLevel) {
   const cMap: Record<LogLevel, Color> = {
@@ -8,9 +8,10 @@ function generateLogger(level: LogLevel) {
     warn: c.yellow,
     debug: c.bgMagenta().white,
     error: c.red,
+    event: c.cyan,
   }
   return function (message: string) {
-    console.log(`${cMap[level](level.toUpperCase())} - ${message}`);
+    console.log(`${cMap[level](level)} - ${message}`);
   }
 }
 
@@ -53,6 +54,10 @@ class Logger implements LoggerType {
 
   error(message: string) {
     generateLogger('error')(message);
+  }
+
+  event(message: string) {
+    generateLogger('event')(message);
   }
 }
 
