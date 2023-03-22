@@ -8,7 +8,8 @@
       "type": "node",
       "request": "launch",
       "name": "debugger backup-cli",
-      "program": "${workspaceFolder}/index.js",
+      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/esno",
+      "program": "${workspaceFolder}/dev.ts",
       "args": [
         // "-d", // debug
         // "-l", // app list
