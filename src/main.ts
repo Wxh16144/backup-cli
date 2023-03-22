@@ -40,7 +40,7 @@ async function main(args: Argv, { logger }: Options) {
 
   const { storage: { directory = "backup" } = {} } = config;
   const storagePath = resolveHome(directory);
-  if (!fs.existsSync(storagePath)) {
+  if (!fs.existsSync(storagePath) && args.config !== 'true') {
     logger.warn(`Storage directory not found: ${storagePath}`);
     fs.ensureDirSync(storagePath);
     logger.info(`Create storage directory: ${storagePath}`);
@@ -49,6 +49,12 @@ async function main(args: Argv, { logger }: Options) {
   const finalConfig = merge(config, {
     storage: { directory: storagePath, }
   });
+
+  if(args.config) {
+    console.clear();
+    console.log(JSON.stringify(finalConfig, null, 2));
+    return;
+  }
 
   const appsConfigs = await loadAppsConfigs(needBackupApps, { logger });
 

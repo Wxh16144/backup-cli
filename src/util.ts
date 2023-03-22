@@ -12,7 +12,7 @@ const __dirname = path.dirname(__filename);
 
 const defaultConfig: Config = {
   storage: {
-    directory: 'backup'
+    directory: path.join(process.cwd(), 'backup'),
   },
 }
 

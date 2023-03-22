@@ -6,6 +6,7 @@ export interface Argv {
   list?: boolean;
   debug?: boolean;
   force?: boolean;
+  config?: string;
   _: string[];
 }
 

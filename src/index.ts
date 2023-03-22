@@ -22,6 +22,7 @@ const argv = mri<Argv>(process.argv.slice(2), {
     l: 'list',
     d: 'debug',
     f: 'force',
+    c: 'config',
   },
 });
 
@@ -37,6 +38,7 @@ async function run(args: Argv = argv) {
     ----------------------------------------
     -${c.bold('l')}, --list: list all apps. (${c.green('* [name]')}: backup, -: not backup)
     -${c.bold('f')}, --force: force to backup (overwrite files).
+    -${c.bold('c')}, --config: view config.
     -${c.bold('h')}, --help: show help.
     -${c.bold('d')}, --debug: show debug info.
     -${c.bold('v')}, --version: show version. ${c.green('v' + pkg.version)}

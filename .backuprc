@@ -1,5 +1,0 @@
-[storage]
-directory = backup
-
-[applications_to_ignore]
-zsh
