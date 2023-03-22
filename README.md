@@ -34,7 +34,7 @@ backup-cli -c
 使用 `backup-cli -h` 查看最新的使用说明：
 
 ```bash
-    npx backup-cli [options]
+    npx @wuxh/backup-cli [options]
     ----------------------------------------
     -l, --list: list all apps.
     -f, --force: force to backup (overwrite files).
