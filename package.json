@@ -22,7 +22,8 @@
     "build": "unbuild",
     "dev": "unbuild --stub",
     "prepublishOnly": "npm run build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prepare": "npm run dev"
   },
   "dependencies": {
     "fast-glob": "^3.2.12",
