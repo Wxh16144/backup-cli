@@ -4,7 +4,7 @@ import ini from 'ini'
 import fs from 'fs'
 import {
   CONFIG_FILE_EXT,
-  CONFIG_DIR_NAME,
+  CUSTOM_APP_CONFIG_DIR,
   resolveProjectRoot,
   resolveHome,
 } from './util'
@@ -18,8 +18,13 @@ export async function getAppConfigs() {
     absolute: true,
   });
 
+  const customAppDir = process.env.BACKUP_CUSTOM_APP_DIR
+  const defaultAppDirPath = resolveHome(CUSTOM_APP_CONFIG_DIR);
+
   const customApps = await glob.sync(`*${CONFIG_FILE_EXT}`, {
-    cwd: resolveHome(CONFIG_DIR_NAME),
+    cwd: customAppDir && fs.existsSync(customAppDir)
+      ? customAppDir
+      : defaultAppDirPath,
     deep: 1,
     absolute: true,
   });

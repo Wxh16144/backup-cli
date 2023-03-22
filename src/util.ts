@@ -21,8 +21,8 @@ const home = process.platform === 'win32'
   : process.env.HOME
 
 export const CONFIG_FILE_EXT = '.cfg';
-export const CONFIG_DIR_NAME = '.backup';
-export const CONFIG_FILE_NAME = `${CONFIG_DIR_NAME}rc`
+export const CUSTOM_APP_CONFIG_DIR = '.backup';
+export const CONFIG_FILE_NAME = `${CUSTOM_APP_CONFIG_DIR}rc`
 
 export const resolveProjectRoot = (...args: string[]) =>
   path.resolve(__dirname, '../', ...args);
