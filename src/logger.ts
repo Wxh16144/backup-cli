@@ -6,7 +6,7 @@ function generateLogger(level: LogLevel) {
   const cMap: Record<LogLevel, Color> = {
     info: c.green,
     warn: c.yellow,
-    debug: c.gray,
+    debug: c.bgMagenta().white,
     error: c.red,
   }
   return function (message: string) {

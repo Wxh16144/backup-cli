@@ -16,7 +16,13 @@ const command = Object.keys(pkg.bin ?? {})[0] ?? pkg.name;
 // const moduleName = pkg.name.replace(/^@.*\//, '')
 
 const argv = mri<Argv>(process.argv.slice(2), {
-  alias: { h: 'help', v: 'version' },
+  alias: {
+    h: 'help',
+    v: 'version',
+    l: 'list',
+    d: 'debug',
+    f: 'force',
+  },
 });
 
 async function run(args: Argv = argv) {
@@ -29,6 +35,9 @@ async function run(args: Argv = argv) {
     console.log(`
     npx ${c.bold(command)} [options]
     ----------------------------------------
+    -${c.bold('l')}, --list: list all apps. (${c.green('* [name]')}: backup, -: not backup)
+    -${c.bold('d')}, --debug: show debug info.
+    -${c.bold('f')}, --force: force to backup (overwrite files).
     -${c.bold('h')}, --help: show help.
     -${c.bold('v')}, --version: show version. ${c.green('v' + pkg.version)}
     ----------------------------------------
@@ -38,7 +47,9 @@ async function run(args: Argv = argv) {
   }
 
   main(args, {
-    logger: new Logger({})
+    logger: new Logger({
+      isDebug: args.debug,
+    })
   });
 }
 

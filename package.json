@@ -25,10 +25,14 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "fast-glob": "^3.2.12",
+    "ini": "^4.0.0",
     "kleur": "^4.1.5",
+    "lodash-es": "^4.17.21",
     "mri": "^1.2.0"
   },
   "devDependencies": {
+    "@types/lodash-es": "^4.17.7",
     "@types/node": "^18.11.19",
     "unbuild": "^1.1.1"
   },
