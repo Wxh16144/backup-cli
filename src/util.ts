@@ -1,4 +1,5 @@
 import path from 'path';
+import url from 'url';
 import fs from 'fs';
 import ini from 'ini';
 import c from "kleur";
@@ -6,7 +7,10 @@ import { merge } from 'lodash-es'
 import { Config } from './type';
 import type { LoggerType } from './logger';
 
-let defaultConfig: Config = {
+const __filename = url.fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const defaultConfig: Config = {
   storage: {
     directory: 'backup'
   },
