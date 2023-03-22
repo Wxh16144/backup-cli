@@ -79,7 +79,13 @@ name = Git
 
 ## 贡献&调试
 
-在 VSCode 中按下 `F5`进行 debugger 即可, [launch.json](./.vscode/launch.json)
+1. 克隆项目后使用 `pnpm` 安装依赖
+
+```bash
+pnpm dev
+```
+
+之后可以在 VSCode 中按下 `F5`进行 debugger, [launch.json](./.vscode/launch.json)
 
 ## LICENSE
 
