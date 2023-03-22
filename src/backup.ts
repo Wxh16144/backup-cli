@@ -51,7 +51,13 @@ async function backupFile(
     fs.ensureDirSync(backupFileDirectory);
   }
 
-  await fs.copyFile(sourceFilePath, backupFilePath);
+  await fs.copy(
+    sourceFilePath,
+    backupFilePath,
+    {
+      dereference: true, // copy symlinks as symlinks
+    }
+  );
 
   logger.event(`File ${action} success: ${sourceFilePath} -> ${backupFilePath}`);
 }
@@ -84,7 +90,10 @@ async function backupDirectory(
     }
   }
 
-  await fs.copy(sourceDirectoryPath, backupDirectoryPath);
+  await fs.copy(
+    sourceDirectoryPath,
+    backupDirectoryPath,
+  );
 
   logger.debug(`${action} directory: ${sourceDirectoryPath} -> ${backupDirectoryPath}`);
 }
