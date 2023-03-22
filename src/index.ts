@@ -3,7 +3,10 @@ import { fileURLToPath } from 'url';
 import path from "path";
 import c from "kleur";
 import mri from "mri";
-import { Argv } from "./type";
+import type { Argv } from "./type";
+import main from "./main";
+import Logger from "./logger";
+
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const resolvePath = (...arg: any[]) => path.resolve(__dirname, '..', ...arg);
@@ -16,7 +19,7 @@ const argv = mri<Argv>(process.argv.slice(2), {
   alias: { h: 'help', v: 'version' },
 });
 
-async function main(args: Argv = argv) {
+async function run(args: Argv = argv) {
   if (args.version) {
     console.log(`${c.bold(pkg.name)}: ${c.green('v' + pkg.version)}`);
     return;
@@ -34,7 +37,9 @@ async function main(args: Argv = argv) {
     return;
   }
 
-  console.log(`Welcome ${c.green(pkg.name)}`);
+  main(args, {
+    logger: new Logger({})
+  });
 }
 
-export default main;
+export default run;
