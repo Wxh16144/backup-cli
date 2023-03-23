@@ -119,7 +119,7 @@ async function backup(
   for (const [filePath, isBackup] of Object.entries(configurationFiles)) {
     if (isBackup) {
       let sourceFilePath = resolveHome(filePath);
-      let backupFilePath = resolveHome(path.join(storagePath, filePath));
+      let backupFilePath = path.join(storagePath, filePath);
 
       if (restore) {
         [sourceFilePath, backupFilePath] = [backupFilePath, sourceFilePath];

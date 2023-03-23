@@ -1,3 +1,4 @@
+import { homedir } from 'os';
 import path from 'path';
 import url from 'url';
 import fs from 'fs';
@@ -12,14 +13,10 @@ const __dirname = path.dirname(__filename);
 
 const defaultConfig: Config = {
   storage: {
-    directory: path.join(process.cwd(), 'backup'),
-    path: '.'
+    directory: 'backup',
+    path: process.cwd(),
   },
 }
-
-const home = process.platform === 'win32'
-  ? process.env.USERPROFILE
-  : process.env.HOME
 
 export const CONFIG_FILE_EXT = '.cfg';
 export const CUSTOM_APP_CONFIG_DIR = '.backup';
@@ -29,7 +26,7 @@ export const resolveProjectRoot = (...args: string[]) =>
   path.resolve(__dirname, '../', ...args);
 
 export const resolveHome = (...args: string[]) =>
-  path.resolve(home || '~/', ...args);
+  path.resolve(homedir() || '~/', ...args);
 
 export function getConfig({ logger }: { logger: LoggerType }) {
   const customRcPath = process.env.BACKUP_CONFIG_FILE

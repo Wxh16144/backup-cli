@@ -6,7 +6,7 @@ import backup from "./backup";
 import type { Argv } from "./type";
 import type { LoggerType } from './logger'
 import { getAppConfigs, getApps, loadAppsConfigs } from './list'
-import { divider, getConfig, resolveHome } from "./util";
+import { divider, getConfig } from "./util";
 
 interface Options {
   logger: LoggerType;
@@ -40,16 +40,10 @@ async function main(args: Argv, { logger }: Options) {
   }
 
   const {
-    storage: { directory = "backup", path: savePath = '.' } = {}
+    storage: { directory = "backup", path: savePath = '/' } = {}
   } = config;
 
-  const storagePath = resolveHome(path.join(savePath, directory));
-
-  if (!fs.existsSync(storagePath) && args.config !== 'true') {
-    logger.warn(`Storage directory not found: ${storagePath}`);
-    fs.ensureDirSync(storagePath);
-    logger.info(`Create storage directory: ${storagePath}`);
-  }
+  const storagePath = path.join(savePath, directory);
 
   const finalConfig = merge({}, config, {
     storage: { directory: storagePath, }
@@ -72,6 +66,12 @@ async function main(args: Argv, { logger }: Options) {
       console.log(divider());
     });
     return;
+  }
+
+  if (!fs.existsSync(storagePath)) {
+    logger.warn(`Storage directory not found: ${storagePath}`);
+    fs.ensureDirSync(storagePath);
+    logger.info(`Create storage directory: ${storagePath}`);
   }
 
   for (const appConfig of appsConfigs) {
