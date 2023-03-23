@@ -15,6 +15,7 @@
     "backup-cli": "index.js"
   },
   "files": [
+    "applications",
     "index.js",
     "dist"
   ],
