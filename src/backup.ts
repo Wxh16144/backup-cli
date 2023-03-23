@@ -34,14 +34,17 @@ async function backupFile(
       type: 'confirm',
       name: 'overwrite',
       message: `${action} file ${c.yellow(backupFilePath)} already exists, do you want to overwrite it?`,
-      initial: false,
     });
 
-    if (response.overwrite) {
-      logger.debug(`${action} file already exists, overwrite`);
+    if (response.hasOwnProperty('overwrite')) {
+      if (response.overwrite) {
+        logger.debug(`${action} file already exists, overwrite`);
+      } else {
+        logger.debug(`${action} file already exists, skip`);
+        return;
+      }
     } else {
-      logger.debug(`${action} file already exists, skip`);
-      return;
+      process.exit(0);
     }
   }
 
@@ -79,14 +82,15 @@ async function backupDirectory(
       type: 'confirm',
       name: 'overwrite',
       message: `${action} directory ${c.yellow(backupDirectoryPath)} not empty, do you want to overwrite it?`,
-      initial: false,
     });
 
-    if (response.overwrite) {
-      logger.debug(`${action} directory not empty, overwrite`);
-    } else {
-      logger.debug(`${action} directory not empty, skip`);
-      return;
+    if (response.hasOwnProperty('overwrite')) {
+      if (response.overwrite) {
+        logger.debug(`${action} directory not empty, overwrite`);
+      } else {
+        logger.debug(`${action} directory not empty, skip`);
+        return;
+      }
     }
   }
 
@@ -112,6 +116,8 @@ async function backup(
     return;
   }
 
+  const action = restore ? 'restore' : 'backup';
+
   const {
     storage: { directory: storagePath = "backup" } = {}
   } = config;
@@ -126,13 +132,13 @@ async function backup(
       }
 
       if (!fs.existsSync(sourceFilePath)) {
-        logger.debug(`the file or directory does not exist: ${sourceFilePath}, no backup is required`);
+        logger.debug(`the file or directory does not exist: ${sourceFilePath}, no ${action} is required`);
         continue;
       }
 
 
       if (sourceFilePath === backupFilePath) {
-        logger.error(`source file path and backup file path are the same: ${sourceFilePath}`);
+        logger.error(`source file path and ${action} file path are the same: ${sourceFilePath}`);
         continue;
       }
 
