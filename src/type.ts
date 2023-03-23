@@ -22,6 +22,7 @@ export interface AppConfig {
 // config
 type Storage = {
   directory?: string;
+  path?: string;
 }
 
 export interface Config {

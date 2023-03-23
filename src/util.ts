@@ -13,6 +13,7 @@ const __dirname = path.dirname(__filename);
 const defaultConfig: Config = {
   storage: {
     directory: path.join(process.cwd(), 'backup'),
+    path: '.'
   },
 }
 
@@ -51,8 +52,8 @@ export function getConfig({ logger }: { logger: LoggerType }) {
 
 export function divider(
   text = '-',
-  length = process.stdout?.columns,
   style = c.bold,
+  length = process.stdout?.columns,
 ) {
   return style(text.repeat(length || 80));
 }

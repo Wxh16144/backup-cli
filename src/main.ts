@@ -1,4 +1,5 @@
 import c from "kleur";
+import path from "path";
 import fs from "fs-extra";
 import { merge } from "lodash-es"
 import backup from "./backup";
@@ -38,25 +39,35 @@ async function main(args: Argv, { logger }: Options) {
     return logger.warn('No apps to backup');
   }
 
-  const { storage: { directory = "backup" } = {} } = config;
-  const storagePath = resolveHome(directory);
+  const {
+    storage: { directory = "backup", path: savePath = '.' } = {}
+  } = config;
+
+  const storagePath = resolveHome(path.join(savePath, directory));
+
   if (!fs.existsSync(storagePath) && args.config !== 'true') {
     logger.warn(`Storage directory not found: ${storagePath}`);
     fs.ensureDirSync(storagePath);
     logger.info(`Create storage directory: ${storagePath}`);
   }
 
-  const finalConfig = merge(config, {
+  const finalConfig = merge({}, config, {
     storage: { directory: storagePath, }
   });
 
   const appsConfigs = await loadAppsConfigs(needBackupApps, { logger });
 
   if (args.config) {
-    console.clear();
+    // https://github.com/lukeed/console-clear/blob/1999bde1861bfdf1cc86cd9b1e977197da8a8d49/index.js#L5
+    process.stdout.write('\x1B[2J\x1B[3J\x1B[H\x1Bc');
+
+    console.log(divider('----- Read Config -----', c.green, 1));
+    console.log(JSON.stringify(config, null, 2));
+    console.log(divider('----- Final Config -----', c.green, 1));
     console.log(JSON.stringify(finalConfig, null, 2));
-    console.log(divider());
-    appsConfigs.forEach(appConfig => {
+
+    console.log(divider('----- Apps Config -----', c.green, 1));
+    appsConfigs.forEach((appConfig, index) => {
       console.log(JSON.stringify(appConfig, null, 2));
       console.log(divider());
     });
