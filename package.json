@@ -22,6 +22,7 @@
   "scripts": {
     "build": "unbuild",
     "dev": "unbuild --stub",
+    "start": "esno dev.ts -d",
     "prepublishOnly": "npm run build",
     "typecheck": "tsc --noEmit"
   },
