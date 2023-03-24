@@ -4,7 +4,7 @@ import url from 'url';
 import fs from 'fs';
 import ini from 'ini';
 import c from "kleur";
-import { Config, MaybeArray, Obj } from './type';
+import { Config, Obj } from './type';
 import type { LoggerType } from './logger';
 
 const __filename = url.fileURLToPath(import.meta.url);
@@ -27,6 +27,26 @@ export const resolveProjectRoot = (...args: string[]) =>
 export const resolveHome = (...args: string[]) =>
   path.resolve(homedir() || '~/', ...args);
 
+function isPlainObject(obj: unknown): obj is Obj {
+  return typeof obj === 'object' && obj !== null && !Array.isArray(obj);
+}
+
+// like lodash.merge
+export function merge<T extends Obj, U extends Obj>(target: T, ...sources: U[]): T & U {
+  sources.forEach((source) => {
+    Object.keys(source).forEach((key) => {
+      const targetValue = target[key];
+      const sourceValue = source[key];
+      if (isPlainObject(targetValue) && isPlainObject(sourceValue)) {
+        (<Obj>target)[key] = merge(targetValue, sourceValue);
+      } else {
+        (<Obj>target)[key] = sourceValue;
+      }
+    });
+  });
+  return target as T & U;
+}
+
 export function getConfig({ logger }: { logger: LoggerType }) {
   const customRcPath = process.env.BACKUP_CONFIG_FILE
   const defaultRcPath = resolveHome(CONFIG_FILE_NAME);
@@ -43,63 +63,7 @@ export function getConfig({ logger }: { logger: LoggerType }) {
   logger.debug(`Config file found: ${configPath}`);
 
   const config = ini.parse(configContent);
-  return setValues({}, defaultConfig, config);
-}
-
-function isObject(obj: any): obj is Obj {
-  return typeof obj === 'object' && obj !== null && Object.getPrototypeOf(obj) === Object.prototype;
-}
-
-function cloneObjectDeep(val: Obj) {
-  if (Object.getPrototypeOf(val) === Object.prototype) {
-    const res: Record<string, any> = {};
-    for (const key in val) {
-      res[key] = cloneDeep(val[key]);
-    }
-    return res;
-  }
-  return val;
-}
-
-function cloneArrayDeep(val: any[]) {
-  return val.map(item => cloneDeep(item));
-}
-
-function cloneDeep<T>(val: T): T {
-  if (Array.isArray(val)) {
-    return cloneArrayDeep(val) as T;
-  } else if (isObject(val)) {
-    return cloneObjectDeep(val) as T;
-  }
-  return val;
-}
-
-// copied https://github.com/react-component/field-form/blob/a34d311f3feb79048a241a5afcfe6083eed2ba47/src/utils/valueUtil.ts#L38-L67
-function internalSetValues<T extends MaybeArray<Obj>>(store: T, values: T): T {
-  const newStore: T = (Array.isArray(store) ? [...store] : { ...store }) as T;
-
-  if (!values) {
-    return newStore;
-  }
-
-  Object.keys(values).forEach(key => {
-    const prevValue = (newStore as Obj)[key];
-    const value: Obj = (values as Obj)[key];
-
-    // If both are object (but target is not array), we use recursion to set deep value
-    const recursive = isObject(prevValue) && isObject(value);
-
-    (newStore as Obj)[key] = recursive ? internalSetValues(prevValue, value || {}) : cloneDeep(value); // Clone deep for arrays
-  });
-
-  return newStore;
-}
-
-export function setValues<T extends Obj>(store: T, ...restValues: T[]): T {
-  return restValues.reduce(
-    (current: T, newStore: T): T => internalSetValues<T>(current, newStore),
-    store,
-  );
+  return merge(defaultConfig, config);
 }
 
 // copied https://github.com/sindresorhus/is-path-inside/blob/6dd8543476cd100488a3cd83887970a8a03504e7/index.js

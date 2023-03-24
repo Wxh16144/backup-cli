@@ -1,6 +1,4 @@
-export type MaybeArray<T> = T | T[];
-
-export type Obj = Record<string, any>;
+export type Obj = Record<string, unknown>;
 
 export interface Argv {
   branch?: string;

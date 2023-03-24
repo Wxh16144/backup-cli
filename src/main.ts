@@ -5,7 +5,7 @@ import backup from "./backup";
 import type { Argv } from "./type";
 import type { LoggerType } from './logger'
 import { getAppConfigs, getApps, loadAppsConfigs } from './list'
-import { divider, getConfig, setValues } from "./util";
+import { divider, getConfig, merge } from "./util";
 
 interface Options {
   logger: LoggerType;
@@ -44,7 +44,7 @@ async function main(args: Argv, { logger }: Options) {
 
   const storagePath = path.join(savePath, directory);
 
-  const finalConfig = setValues({}, config, {
+  const finalConfig = merge({}, config, {
     storage: { directory: storagePath, }
   });
 
