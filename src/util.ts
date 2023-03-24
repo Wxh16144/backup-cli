@@ -102,6 +102,18 @@ export function setValues<T extends Obj>(store: T, ...restValues: T[]): T {
   );
 }
 
+// copied https://github.com/sindresorhus/is-path-inside/blob/6dd8543476cd100488a3cd83887970a8a03504e7/index.js
+export function isPathInside(childPath: string, parentPath: string) {
+  const relation = path.relative(parentPath, childPath);
+
+  return Boolean(
+    relation &&
+    relation !== '..' &&
+    !relation.startsWith(`..${path.sep}`) &&
+    relation !== path.resolve(childPath)
+  );
+}
+
 export function divider(
   text = '-',
   style = c.bold,

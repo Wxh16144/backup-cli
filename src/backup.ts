@@ -5,7 +5,7 @@ import util from 'util';
 import c from 'kleur';
 import type { LoggerType } from "./logger";
 import type { AppConfig, Config } from "./type";
-import { resolveHome } from './util';
+import { isPathInside, resolveHome } from './util';
 
 const readdir = util.promisify(fs.readdir);
 
@@ -137,8 +137,16 @@ async function backup(
       }
 
 
-      if (sourceFilePath === backupFilePath) {
+      if (
+        sourceFilePath === backupFilePath ||
+        path.resolve(sourceFilePath) === path.resolve(backupFilePath)
+      ) {
         logger.error(`source file path and ${action} file path are the same: ${sourceFilePath}`);
+        continue;
+      }
+
+      if (isPathInside(backupFilePath, sourceFilePath)) {
+        logger.error(`source file path is inside ${action} file path: ${sourceFilePath} -> ${backupFilePath}`);
         continue;
       }
 
