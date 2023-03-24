@@ -1,12 +1,11 @@
 import c from "kleur";
 import path from "path";
 import fs from "fs-extra";
-import { merge } from "lodash-es"
 import backup from "./backup";
 import type { Argv } from "./type";
 import type { LoggerType } from './logger'
 import { getAppConfigs, getApps, loadAppsConfigs } from './list'
-import { divider, getConfig } from "./util";
+import { divider, getConfig, setValues } from "./util";
 
 interface Options {
   logger: LoggerType;
@@ -45,7 +44,7 @@ async function main(args: Argv, { logger }: Options) {
 
   const storagePath = path.join(savePath, directory);
 
-  const finalConfig = merge({}, config, {
+  const finalConfig = setValues({}, config, {
     storage: { directory: storagePath, }
   });
 

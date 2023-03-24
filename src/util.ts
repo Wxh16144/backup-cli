@@ -4,8 +4,7 @@ import url from 'url';
 import fs from 'fs';
 import ini from 'ini';
 import c from "kleur";
-import { merge } from 'lodash-es'
-import { Config } from './type';
+import { Config, MaybeArray, Obj } from './type';
 import type { LoggerType } from './logger';
 
 const __filename = url.fileURLToPath(import.meta.url);
@@ -44,7 +43,63 @@ export function getConfig({ logger }: { logger: LoggerType }) {
   logger.debug(`Config file found: ${configPath}`);
 
   const config = ini.parse(configContent);
-  return merge(defaultConfig, config);
+  return setValues({}, defaultConfig, config);
+}
+
+function isObject(obj: any): obj is Obj {
+  return typeof obj === 'object' && obj !== null && Object.getPrototypeOf(obj) === Object.prototype;
+}
+
+function cloneObjectDeep(val: Obj) {
+  if (Object.getPrototypeOf(val) === Object.prototype) {
+    const res: Record<string, any> = {};
+    for (const key in val) {
+      res[key] = cloneDeep(val[key]);
+    }
+    return res;
+  }
+  return val;
+}
+
+function cloneArrayDeep(val: any[]) {
+  return val.map(item => cloneDeep(item));
+}
+
+function cloneDeep<T>(val: T): T {
+  if (Array.isArray(val)) {
+    return cloneArrayDeep(val) as T;
+  } else if (isObject(val)) {
+    return cloneObjectDeep(val) as T;
+  }
+  return val;
+}
+
+// copied https://github.com/react-component/field-form/blob/a34d311f3feb79048a241a5afcfe6083eed2ba47/src/utils/valueUtil.ts#L38-L67
+function internalSetValues<T extends MaybeArray<Obj>>(store: T, values: T): T {
+  const newStore: T = (Array.isArray(store) ? [...store] : { ...store }) as T;
+
+  if (!values) {
+    return newStore;
+  }
+
+  Object.keys(values).forEach(key => {
+    const prevValue = (newStore as Obj)[key];
+    const value: Obj = (values as Obj)[key];
+
+    // If both are object (but target is not array), we use recursion to set deep value
+    const recursive = isObject(prevValue) && isObject(value);
+
+    (newStore as Obj)[key] = recursive ? internalSetValues(prevValue, value || {}) : cloneDeep(value); // Clone deep for arrays
+  });
+
+  return newStore;
+}
+
+export function setValues<T extends Obj>(store: T, ...restValues: T[]): T {
+  return restValues.reduce(
+    (current: T, newStore: T): T => internalSetValues<T>(current, newStore),
+    store,
+  );
 }
 
 export function divider(
