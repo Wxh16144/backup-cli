@@ -44,7 +44,11 @@ export async function getApps(apps: string[], config: Config = {}) {
       if (applications_to_ignore?.[appName]) {
         return acc;
       }
-      if (applications_to_sync && !applications_to_sync[appName]) {
+      if (
+        applications_to_sync &&
+        Object.keys(applications_to_sync).length > 0 &&
+        !applications_to_sync[appName]
+      ) {
         return acc;
       }
       return { ...acc, [appName]: app };
