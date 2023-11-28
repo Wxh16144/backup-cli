@@ -82,7 +82,13 @@ async function main(args: Argv, { logger }: Options) {
       finalConfig,
       {
         logger,
-        force: args.restore ? false : args.force,
+        force: args.restore
+          /**
+           * extra care needs to be taken and double confirmation!!!
+           * needs to be enabled via environment variables.
+           */
+          ? (process.env.BACKUP_FORCE_RESTORE === 'true' && args.force)
+          : args.force,
         restore: args.restore,
       }
     );
