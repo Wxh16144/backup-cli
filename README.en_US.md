@@ -74,7 +74,7 @@ git
 
 ## Custom Application
 
-> Define the `[application name].cfg` configuration file and place it in the `$HOME/.backup` directory. You can customize other directories by setting the `CUSTOM_APP_CONFIG_DIR` environment variable.
+> Define the `[application name].cfg` configuration file and place it in the `$HOME/.backup` directory. You can customize other directories by setting the `BACKUP_CUSTOM_APP_DIR` environment variable.
 
 ```ini
 [application]

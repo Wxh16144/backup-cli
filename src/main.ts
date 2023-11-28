@@ -73,22 +73,30 @@ async function main(args: Argv, { logger }: Options) {
     logger.info(`Create storage directory: ${storagePath}`);
   }
 
+  const actionPrefix = args.restore ? 'Restore' : 'Backup';
+
   for (const appConfig of appsConfigs) {
-    logger.info(`Backup ${c.bold(appConfig.application.name)} ...`);
+    logger.info(`${actionPrefix} ${c.bold(appConfig.application.name)} ...`);
     await backup(
       appConfig,
       finalConfig,
       {
         logger,
-        force: args.restore ? false : args.force,
+        force: args.restore
+          /**
+           * extra care needs to be taken and double confirmation!!!
+           * needs to be enabled via environment variables.
+           */
+          ? (process.env.BACKUP_FORCE_RESTORE === 'true' && args.force)
+          : args.force,
         restore: args.restore,
       }
     );
-    logger.info(`Backup ${c.bold(appConfig.application.name)} ${c.green('done')}\n`);
+    logger.info(`${actionPrefix} ${c.bold(appConfig.application.name)} ${c.green('done')}\n`);
   }
 
   // successful backup finished
-  console.log(c.green().bold(`[${new Date().toLocaleTimeString(undefined, { hour12: false })}] Successful backup finished!`));
+  console.log(c.green().bold(`[${new Date().toLocaleTimeString(undefined, { hour12: false })}] Successful ${actionPrefix.toLowerCase()} finished!`));
 }
 
 export default main;
