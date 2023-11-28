@@ -74,7 +74,7 @@ git
 
 ## 自定义应用程序
 
-> 定义 `[application name].cfg` 配置文件，并放在 `$HOME/.backup` 根目录中，你可以通过设置 `CUSTOM_APP_CONFIG_DIR` 环境变量自定义其他目录。
+> 定义 `[application name].cfg` 配置文件，并放在 `$HOME/.backup` 根目录中，你可以通过设置 `BACKUP_CUSTOM_APP_DIR` 环境变量自定义其他目录。
 
 ```ini
 [application]
