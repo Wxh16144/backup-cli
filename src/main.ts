@@ -73,8 +73,10 @@ async function main(args: Argv, { logger }: Options) {
     logger.info(`Create storage directory: ${storagePath}`);
   }
 
+  const actionPrefix = args.restore ? 'Restore' : 'Backup';
+
   for (const appConfig of appsConfigs) {
-    logger.info(`Backup ${c.bold(appConfig.application.name)} ...`);
+    logger.info(`${actionPrefix} ${c.bold(appConfig.application.name)} ...`);
     await backup(
       appConfig,
       finalConfig,
@@ -84,11 +86,11 @@ async function main(args: Argv, { logger }: Options) {
         restore: args.restore,
       }
     );
-    logger.info(`Backup ${c.bold(appConfig.application.name)} ${c.green('done')}\n`);
+    logger.info(`${actionPrefix} ${c.bold(appConfig.application.name)} ${c.green('done')}\n`);
   }
 
   // successful backup finished
-  console.log(c.green().bold(`[${new Date().toLocaleTimeString(undefined, { hour12: false })}] Successful backup finished!`));
+  console.log(c.green().bold(`[${new Date().toLocaleTimeString(undefined, { hour12: false })}] Successful ${actionPrefix.toLowerCase()} finished!`));
 }
 
 export default main;
