@@ -12,8 +12,8 @@
       "program": "${workspaceFolder}/dev.ts",
       "args": [
         // "-d", // debug
-        // "-l", // app list
-        "--config", // show config
+        "-l", // app list
+        // "--config", // show config
       ],
       "cwd": "${workspaceFolder}",
       "env": {

@@ -1,0 +1,3 @@
+[submodule "mackup"]
+	path = mackup
+	url = git@github.com:lra/mackup.git

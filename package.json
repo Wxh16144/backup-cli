@@ -16,6 +16,7 @@
   },
   "files": [
     "applications",
+    "mackup/mackup/applications",
     "index.js",
     "dist"
   ],
@@ -23,7 +24,7 @@
     "build": "unbuild",
     "dev": "unbuild --stub",
     "start": "esno dev.ts -d",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "git submodule update --remote && npm run build",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

@@ -1,4 +1,4 @@
-export type Obj = Record<string, unknown>;
+export type Obj = Record<PropertyKey, any>
 
 export interface Argv {
   branch?: string;
