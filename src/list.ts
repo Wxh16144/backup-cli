@@ -12,24 +12,29 @@ import type { AppConfig, Config } from './type'
 import type { LoggerType } from './logger'
 
 export async function getAppConfigs() {
+  // https://github.com/lra/mackup/blob/master/LICENSE
+  const _defaultAppDir = resolveProjectRoot('mackup/mackup/applications');
+  const _defaultCustomAppDirPath = resolveHome(CUSTOM_APP_CONFIG_DIR);
+
   const defaultApps = await glob.sync(`*${CONFIG_FILE_EXT}`, {
+    cwd: [process.env.BACKUP_DEFAULT_APP_DIR || _defaultAppDir].find(fs.existsSync) || _defaultAppDir,
+    deep: 1,
+    absolute: true,
+  });
+
+  const customApps = await glob.sync(`*${CONFIG_FILE_EXT}`, {
+    cwd: [process.env.BACKUP_CUSTOM_APP_DIR || _defaultCustomAppDirPath].find(fs.existsSync) || _defaultCustomAppDirPath,
+    deep: 1,
+    absolute: true,
+  });
+
+  const builtInApps = await glob.sync(`*${CONFIG_FILE_EXT}`, {
     cwd: resolveProjectRoot('applications'),
     deep: 1,
     absolute: true,
   });
 
-  const customAppDir = process.env.BACKUP_CUSTOM_APP_DIR
-  const defaultAppDirPath = resolveHome(CUSTOM_APP_CONFIG_DIR);
-
-  const customApps = await glob.sync(`*${CONFIG_FILE_EXT}`, {
-    cwd: customAppDir && fs.existsSync(customAppDir)
-      ? customAppDir
-      : defaultAppDirPath,
-    deep: 1,
-    absolute: true,
-  });
-
-  return [...defaultApps, ...customApps]
+  return [...builtInApps, ...defaultApps, ...customApps]
 }
 
 export async function getApps(apps: string[], config: Config = {}) {

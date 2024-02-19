@@ -1,6 +1,6 @@
 # @wuxh/backup-cli
 
-> 备份你的配置文件和目录
+> 备份你的配置文件和目录 [为什么重复创造轮子？](https://github.com/lra/mackup/issues/1849#issuecomment-1369963734)，[lra/mackup#1969](https://github.com/lra/mackup/discussions/1969)。
 
 [![npm](https://img.shields.io/npm/v/@wuxh/backup-cli.svg?style=for-the-badge)](https://www.npmjs.com/package/@wuxh/backup-cli)
 [![npm](https://img.shields.io/npm/dt/@wuxh/backup-cli.svg?style=for-the-badge)](https://www.npmjs.com/package/@wuxh/backup-cli)
@@ -25,6 +25,12 @@ backup-cli
 
 ```bash
 backup-cli -r
+```
+
+### 支持的应用程序
+
+```bash
+backup-cli -l
 ```
 
 ### 查看配置
