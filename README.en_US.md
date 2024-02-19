@@ -27,6 +27,12 @@ backup-cli
 backup-cli -r
 ```
 
+### Support Apps
+
+```bash
+backup-cli -l
+```
+
 ### View Configuration
 
 ```bash

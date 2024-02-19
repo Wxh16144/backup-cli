@@ -27,6 +27,12 @@ backup-cli
 backup-cli -r
 ```
 
+### 支持的应用程序
+
+```bash
+backup-cli -l
+```
+
 ### 查看配置
 
 ```bash
