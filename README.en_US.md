@@ -1,6 +1,6 @@
 # @wuxh/backup-cli
 
-> Backup your configuration files and directories
+> Backup your configuration files and directories [Why?](https://github.com/lra/mackup/issues/1849#issuecomment-1369963734), [lra/mackup#1969](https://github.com/lra/mackup/discussions/1969).
 
 [![npm](https://img.shields.io/npm/v/@wuxh/backup-cli.svg?style=for-the-badge)](https://www.npmjs.com/package/@wuxh/backup-cli)
 [![npm](https://img.shields.io/npm/dt/@wuxh/backup-cli.svg?style=for-the-badge)](https://www.npmjs.com/package/@wuxh/backup-cli)
