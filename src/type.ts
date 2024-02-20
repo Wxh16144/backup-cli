@@ -19,6 +19,7 @@ export interface AppConfig {
     name: string;
   }
   configuration_files: Record<string, boolean>
+  xdg_configuration_files: Record<string, boolean>
 }
 
 // config
