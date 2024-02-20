@@ -5,7 +5,7 @@ import util from 'util';
 import c from 'kleur';
 import type { LoggerType } from "./logger";
 import type { AppConfig, Config } from "./type";
-import { isPathInside, resolveHome } from './util';
+import { isPathInside, resolveHome, resolveXDGConfig } from './util';
 
 const readdir = util.promisify(fs.readdir);
 
@@ -102,6 +102,21 @@ async function backupDirectory(
   logger.debug(`${action} directory: ${sourceDirectoryPath} -> ${backupDirectoryPath}`);
 }
 
+function handleConfigFiles(appConfig: AppConfig) {
+  const finalConfigFiles: Record<string, boolean> = {
+    ...(appConfig.configuration_files ?? {}),
+  };
+
+  const xdgConfigFiles = appConfig.xdg_configuration_files ?? {};
+
+  for (const [filePath, isBackup] of Object.entries(xdgConfigFiles)) {
+    if (path.isAbsolute(filePath)) continue; // Unsupported absolute path
+
+    finalConfigFiles[resolveXDGConfig(filePath)] = isBackup;
+  }
+
+  return finalConfigFiles;
+}
 
 async function backup(
   appConfig: AppConfig,
@@ -109,7 +124,7 @@ async function backup(
   { logger, force = false, restore = false }: BackupOptions
 ) {
 
-  const configurationFiles = appConfig.configuration_files ?? {};
+  const configurationFiles = handleConfigFiles(appConfig);
 
   if (Object.keys(configurationFiles).length === 0) {
     logger.warn('No configuration files to backup');
