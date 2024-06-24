@@ -52,7 +52,7 @@ async function run(args: Argv = argv) {
 
   main(args, {
     logger: new Logger({
-      isDebug: args.debug,
+      isDebug: args.debug || process.env.DEBUG === command,
     })
   });
 }
