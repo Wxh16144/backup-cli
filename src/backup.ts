@@ -144,6 +144,25 @@ async function backup(
 
       if (restore) {
         [sourceFilePath, backupFilePath] = [backupFilePath, sourceFilePath];
+
+        // 上游 $HOME (通常指还原别人的备份文件, 他们的 $HOME 不一样)
+        const upstreamHome = process.env.BACKUP_UPSTREAM_HOME,
+          restoreHome = resolveHome();
+        if (
+          typeof upstreamHome === 'string' &&
+          upstreamHome.length > 0 &&
+          upstreamHome !== restoreHome
+        ) {
+          const realBackedPath = path.join(storagePath, upstreamHome);
+          const restoredPath = path.join(storagePath, restoreHome);
+
+          logger.debug(`[restore] upstream home: ${realBackedPath} -> ${restoredPath}`);
+
+          sourceFilePath = sourceFilePath.replace(
+            new RegExp(`^${restoredPath}`),
+            realBackedPath
+          );
+        }
       }
 
       if (!fs.existsSync(sourceFilePath)) {
