@@ -89,7 +89,26 @@ name = Git
 ; Directories or files to be synchronized, concatenated from $HOME
 [configuration_files]
 .gitconfig_work
+
+; XDG configuration file, concatenated from $XDG_CONFIG_HOME
+; see: https://specifications.freedesktop.org/basedir-spec/latest
+[xdg_configuration_files]
+git/config
 ```
+
+## Advanced
+
+### Forced Restore
+
+When using `backup-cli -r` to restore backups, the `--force` option does not bypass confirmation prompts even when set to force overwriting files. This is due to security and data integrity considerations; by default, backups are not overwritten without user consent.
+
+- **Tip**: You can enforce a restore operation by setting the environment variable `BACKUP_FORCE_RESTORE = true`. However, it's important to note that this still requires using the `--force` argument in your command.
+
+### Restoring Another's Backup
+
+When attempting to restore files from backup directories into your `$HOME` directory, the issue might arise because their `$HOME` directories may differ from yours. Direct restoration would fail due to these differences.
+
+- **Tip**: To successfully restore another person's backups, you can set the environment variable `BACKUP_UPSTREAM_HOME={theirs HOME directory}` in your command. This specifies where each file should be placed upon restoration, ensuring they are correctly located on your system.
 
 ## Who is Using
 
