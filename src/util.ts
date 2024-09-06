@@ -18,7 +18,7 @@ const defaultConfig: Config = {
 }
 
 // https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
-export const XDG_CONFIG_PATH = path.join(process.env.XDG_CONFIG_HOME || homedir(), '.config');
+export const XDG_CONFIG_PATH = process.env.XDG_CONFIG_HOME ?? path.join(homedir(), '.config');
 export const CONFIG_FILE_EXT = '.cfg';
 export const CUSTOM_APP_CONFIG_DIR = '.backup';
 export const CONFIG_FILE_NAME = `${CUSTOM_APP_CONFIG_DIR}rc`
