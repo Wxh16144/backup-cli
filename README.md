@@ -89,7 +89,26 @@ name = Git
 ; 要同步的目录或文件， 从 $HOME 开始拼接
 [configuration_files]
 .gitconfig_work
+
+; XDG 配置文件, 从 $XDG_CONFIG_HOME 开始拼接;
+; see: https://specifications.freedesktop.org/basedir-spec/latest
+[xdg_configuration_files]
+git/config
 ```
+
+## 高级用法
+
+### 强制还原
+
+`backup-cli -r` 还原备份时使用 `--force` 无法强制覆盖文件（还是会进行二次确认）。因为数据是宝贵的，所以默认不会覆盖。
+
+- **tips**: 你可以通过设置 `BACKUP_FORCE_RESTORE = true` 环境变量来强制还原。（还是需要加上 `--force` 参数）
+
+### 还原他人的备份
+
+还原备份目录中的文件到 `$HOME` 目录，但是他人的 `$HOME` 目录可能和你的不一样，所以不能直接还原。
+
+- **tips**: 你可以通过设置 `BACKUP_UPSTREAM_HOME={别人的HOME目录}` 环境变量来还原他人的备份。
 
 ## 谁在使用
 
