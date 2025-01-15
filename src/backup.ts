@@ -6,6 +6,7 @@ import c from 'kleur';
 import type { LoggerType } from "./logger";
 import type { AppConfig, Config } from "./type";
 import { isPathInside, resolveHome, resolveXDGConfig } from './util';
+import type { LogFile } from './log';
 
 const readdir = util.promisify(fs.readdir);
 
@@ -16,6 +17,7 @@ async function isDirectoryEmpty(dirPath: string) {
 
 type BackupOptions = {
   logger: LoggerType;
+  logFile: LogFile;
   force?: boolean;
   restore?: boolean;
 }
@@ -23,7 +25,7 @@ type BackupOptions = {
 async function backupFile(
   sourceFilePath: string,
   backupFilePath: string,
-  { logger, force = false, restore = false }: BackupOptions
+  { logger, force = false, restore = false, logFile }: BackupOptions
 ) {
 
   const action = restore ? 'restore' : 'backup';
@@ -41,6 +43,7 @@ async function backupFile(
         logger.debug(`${action} file already exists, overwrite`);
       } else {
         logger.debug(`${action} file already exists, skip`);
+        logFile.append({ target: backupFilePath, source: sourceFilePath, type: 'file', status: 'skip' })
         return;
       }
     } else {
@@ -54,21 +57,28 @@ async function backupFile(
     fs.ensureDirSync(backupFileDirectory);
   }
 
-  await fs.copy(
+  return fs.copy(
     sourceFilePath,
     backupFilePath,
     {
       dereference: true, // copy symlinks as symlinks
     }
-  );
+  )
+    .then(() => {
+      logger.event(`File ${action} success: ${sourceFilePath} -> ${backupFilePath}`);
+      logFile.append({ target: backupFilePath, source: sourceFilePath, type: 'file', status: 'success' })
+    })
+    .catch(() => {
+      logger.error(`File ${action} error: ${sourceFilePath} -> ${backupFilePath}`);
+      logFile.append({ target: backupFilePath, source: sourceFilePath, type: 'file', status: 'error' })
+    });
 
-  logger.event(`File ${action} success: ${sourceFilePath} -> ${backupFilePath}`);
 }
 
 async function backupDirectory(
   sourceDirectoryPath: string,
   backupDirectoryPath: string,
-  { logger, force = false, restore = false }: BackupOptions
+  { logger, force = false, restore = false, logFile }: BackupOptions
 ) {
   const action = restore ? 'restore' : 'backup';
 
@@ -89,17 +99,24 @@ async function backupDirectory(
         logger.debug(`${action} directory not empty, overwrite`);
       } else {
         logger.debug(`${action} directory not empty, skip`);
+        logFile.append({ target: backupDirectoryPath, source: sourceDirectoryPath, type: 'directory', status: 'skip' })
         return;
       }
     }
   }
 
-  await fs.copy(
+  return fs.copy(
     sourceDirectoryPath,
     backupDirectoryPath,
-  );
-
-  logger.debug(`${action} directory: ${sourceDirectoryPath} -> ${backupDirectoryPath}`);
+  )
+    .then(() => {
+      logger.event(`Directory ${action} success: ${sourceDirectoryPath} -> ${backupDirectoryPath}`);
+      logFile.append({ target: backupDirectoryPath, source: sourceDirectoryPath, type: 'directory', status: 'success' })
+    })
+    .catch(() => {
+      logger.error(`Directory ${action} error: ${sourceDirectoryPath} -> ${backupDirectoryPath}`);
+      logFile.append({ target: backupDirectoryPath, source: sourceDirectoryPath, type: 'directory', status: 'error' })
+    });
 }
 
 function handleConfigFiles(appConfig: AppConfig) {
@@ -121,8 +138,9 @@ function handleConfigFiles(appConfig: AppConfig) {
 async function backup(
   appConfig: AppConfig,
   config: Config,
-  { logger, force = false, restore = false }: BackupOptions
+  options: BackupOptions
 ) {
+  const { logger, restore = false } = options;
 
   const configurationFiles = handleConfigFiles(appConfig);
 
@@ -190,7 +208,7 @@ async function backup(
         await backupDirectory(
           sourceFilePath,
           backupFilePath,
-          { logger, force, restore }
+          options,
         );
       }
 
@@ -198,7 +216,7 @@ async function backup(
         await backupFile(
           sourceFilePath,
           backupFilePath,
-          { logger, force, restore }
+          options,
         );
       }
     }

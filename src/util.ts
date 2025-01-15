@@ -13,6 +13,7 @@ const __dirname = path.dirname(__filename);
 const defaultConfig: Config = {
   storage: {
     directory: 'backup',
+    logs: 'logs',
     path: process.cwd(),
   },
 }
@@ -83,10 +84,18 @@ export function isPathInside(childPath: string, parentPath: string) {
   );
 }
 
-export function divider(
-  text = '-',
+export function dividerLine(
+  text = '',
+  repeat = '-',
   style = c.bold,
-  length = process.stdout?.columns,
 ) {
-  return style(text.repeat(length || 80));
+  const fullLength = process.stdout?.columns || 80;
+
+  const textLength = (text.length) + 2;
+
+  const leftLength = Math.floor((fullLength - textLength) / 2);
+
+  const left = repeat.repeat(leftLength);
+  const right = repeat.repeat(fullLength - leftLength - textLength);
+  return style(`${left}${text.length ? ` ${text} ` : ''}${right}`);
 }
