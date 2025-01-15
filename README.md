@@ -110,6 +110,24 @@ git/config
 
 - **tips**: 你可以通过设置 `BACKUP_UPSTREAM_HOME={别人的HOME目录}` 环境变量来还原他人的备份。
 
+### 日志记录
+
+每次备份或还原操作都会在 `storage.logs` 目录下生成日志文件：
+
+- 文件格式：`[Backup|Restore]-{timestamp}.jsonl`
+- 记录内容：操作类型、源文件、目标路径、状态等详细信息
+
+<details>
+    <summary>查看日志示例</summary>
+
+```jsonl
+{"target":"../backup/.gitconfig","source":"/Users/root/.gitconfig","type":"file","status":"success"}
+{"target":"../backup/.gnupg/gpg.conf","source":"/Users/root/.gnupg/gpg.conf","type":"file","status":"success"}
+{"target":"../backup/.cargo/config","source":"/Users/root/.cargo/config","type":"file","status":"success"}
+```
+
+</details>
+
 ## 谁在使用
 
 - [Wxh16144's Dotfiles](https://github.com/Wxh16144/dotfiles)
