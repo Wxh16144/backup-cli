@@ -4,14 +4,16 @@ import path from 'path';
 export class LogFile {
   private basePath;
   private fileName;
+  private operation;
 
   constructor(
-    operation: string,
+    operation: 'Restore' | 'Backup',
     basePath: string = process.cwd()
   ) {
     this.basePath = basePath;
+    this.operation = operation;
 
-    this.fileName = `${Date.now()}-${operation}.jsonl`;
+    this.fileName = `${operation}-${Date.now()}.jsonl`;
   }
 
   private async write(data: string) {
@@ -20,6 +22,9 @@ export class LogFile {
       data + '\n'
     );
   }
+  get isRestored() {
+    return String(this.operation).toLowerCase() === 'restore';
+  }
 
   async append(data: {
     target: string,
@@ -27,10 +32,14 @@ export class LogFile {
     type: 'file' | 'directory',
     status: 'success' | 'error' | 'skip',
   }) {
-    await this.write(JSON.stringify({
+    const obj = {
       ...data,
-      target: path.relative(this.basePath, data.target),
-      // timestamp: Date.now(),
-    }));
+      ...(
+        this.isRestored
+          ? { source: path.relative(this.basePath, data.source) }
+          : { target: path.relative(this.basePath, data.target) }
+      )
+    }
+    return this.write(JSON.stringify(obj));
   }
 }
