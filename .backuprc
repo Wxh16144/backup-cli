@@ -1,7 +1,8 @@
 ; 默认情况下仅 vscode 调试生效
 ; 如果要在终端调试请建立软链接, ln -s $PWD/.backuprc $HOME/.backuprc
 [storage]
-directory = tmp_backup
+directory=tmp_backup
+logs=tmp_logs
 
 [applications_to_ignore]
 backup

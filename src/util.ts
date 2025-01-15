@@ -13,6 +13,7 @@ const __dirname = path.dirname(__filename);
 const defaultConfig: Config = {
   storage: {
     directory: 'backup',
+    logs: 'logs',
     path: process.cwd(),
   },
 }
