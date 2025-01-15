@@ -25,6 +25,7 @@ export interface AppConfig {
 // config
 type Storage = {
   directory?: string;
+  logs?: string;
   path?: string;
 }
 
