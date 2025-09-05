@@ -102,13 +102,29 @@ git/config
 
 When using `backup-cli -r` to restore backups, the `--force` option does not bypass confirmation prompts even when set to force overwriting files. This is due to security and data integrity considerations; by default, backups are not overwritten without user consent.
 
-- **Tip**: You can enforce a restore operation by setting the environment variable `BACKUP_FORCE_RESTORE = true`. However, it's important to note that this still requires using the `--force` argument in your command.
+- **Tip**: You can enforce a restore operation by setting the environment variable `BACKUP_FORCE_RESTORE=true`. However, it's important to note that this still requires using the `--force` argument in your command.
 
 ### Restoring Another's Backup
 
 When attempting to restore files from backup directories into your `$HOME` directory, the issue might arise because their `$HOME` directories may differ from yours. Direct restoration would fail due to these differences.
 
 - **Tip**: To successfully restore another person's backups, you can set the environment variable `BACKUP_UPSTREAM_HOME={theirs HOME directory}` in your command. This specifies where each file should be placed upon restoration, ensuring they are correctly located on your system.
+
+## Log
+
+Each backup or restore operation generates a log file in the `storage.logs` directory:
+
+- File name format: `[Backup|Restore]-YYYY-MM-DD_HHMMSS.jsonl`, e.g. `Backup-2025-09-05_153012.jsonl`
+- Content: operation type, source file, target path, status, etc.
+
+<details>
+    <summary>View log example</summary>
+
+```jsonl
+{"target":"../backup/.gitconfig","source":"/Users/root/.gitconfig","type":"file","status":"success"}
+{"target":"../backup/.gnupg/gpg.conf","source":"/Users/root/.gnupg/gpg.conf","type":"file","status":"success"}
+{"target":"../backup/.cargo/config","source":"/Users/root/.cargo/config","type":"file","status":"success"}
+```
 
 ## Who is Using
 
