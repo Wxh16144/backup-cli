@@ -102,7 +102,7 @@ git/config
 
 `backup-cli -r` 还原备份时使用 `--force` 无法强制覆盖文件（还是会进行二次确认）。因为数据是宝贵的，所以默认不会覆盖。
 
-- **tips**: 你可以通过设置 `BACKUP_FORCE_RESTORE = true` 环境变量来强制还原。（还是需要加上 `--force` 参数）
+- **tips**: 你可以通过设置 `BACKUP_FORCE_RESTORE=true` 环境变量来强制还原。（还是需要加上 `--force` 参数）
 
 ### 还原他人的备份
 
@@ -114,7 +114,7 @@ git/config
 
 每次备份或还原操作都会在 `storage.logs` 目录下生成日志文件：
 
-- 文件格式：`[Backup|Restore]-{timestamp}.jsonl`
+- 文件名格式：`[Backup|Restore]-YYYY-MM-DD_HHMMSS.jsonl`，例如：`Backup-2025-09-05_153012.jsonl`
 - 记录内容：操作类型、源文件、目标路径、状态等详细信息
 
 <details>

@@ -87,7 +87,7 @@ async function backupDirectory(
     fs.ensureDirSync(backupDirectoryPath);
   }
 
-  if (!isDirectoryEmpty(backupDirectoryPath) && !force) {
+  if (!await isDirectoryEmpty(backupDirectoryPath) && !force) {
     const response = await prompts({
       type: 'confirm',
       name: 'overwrite',
@@ -176,10 +176,10 @@ async function backup(
 
           logger.debug(`[restore] upstream home: ${realBackedPath} -> ${restoredPath}`);
 
-          sourceFilePath = sourceFilePath.replace(
-            new RegExp(`^${restoredPath}`),
-            realBackedPath
-          );
+          if (sourceFilePath.startsWith(restoredPath)) {
+            const relative = path.relative(restoredPath, sourceFilePath);
+            sourceFilePath = path.join(realBackedPath, relative);
+          }
         }
       }
 
