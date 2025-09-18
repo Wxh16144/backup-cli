@@ -22,10 +22,14 @@ type BackupOptions = {
   restore?: boolean;
 }
 
+interface BackupOptionsWithApp extends BackupOptions {
+  application: string;
+}
+
 async function backupFile(
   sourceFilePath: string,
   backupFilePath: string,
-  { logger, force = false, restore = false, logFile }: BackupOptions
+  { logger, force = false, restore = false, logFile, application }: BackupOptionsWithApp
 ) {
 
   const action = restore ? 'restore' : 'backup';
@@ -43,7 +47,7 @@ async function backupFile(
         logger.debug(`${action} file already exists, overwrite`);
       } else {
         logger.debug(`${action} file already exists, skip`);
-        logFile.append({ target: backupFilePath, source: sourceFilePath, type: 'file', status: 'skip' })
+        logFile.append({ target: backupFilePath, source: sourceFilePath, type: 'file', status: 'skip', application });
         return;
       }
     } else {
@@ -66,11 +70,11 @@ async function backupFile(
   )
     .then(() => {
       logger.event(`File ${action} success: ${sourceFilePath} -> ${backupFilePath}`);
-      logFile.append({ target: backupFilePath, source: sourceFilePath, type: 'file', status: 'success' })
+      logFile.append({ target: backupFilePath, source: sourceFilePath, type: 'file', status: 'success', application });
     })
     .catch(() => {
       logger.error(`File ${action} error: ${sourceFilePath} -> ${backupFilePath}`);
-      logFile.append({ target: backupFilePath, source: sourceFilePath, type: 'file', status: 'error' })
+      logFile.append({ target: backupFilePath, source: sourceFilePath, type: 'file', status: 'error', application });
     });
 
 }
@@ -78,7 +82,7 @@ async function backupFile(
 async function backupDirectory(
   sourceDirectoryPath: string,
   backupDirectoryPath: string,
-  { logger, force = false, restore = false, logFile }: BackupOptions
+  { logger, force = false, restore = false, logFile, application }: BackupOptionsWithApp
 ) {
   const action = restore ? 'restore' : 'backup';
 
@@ -99,7 +103,7 @@ async function backupDirectory(
         logger.debug(`${action} directory not empty, overwrite`);
       } else {
         logger.debug(`${action} directory not empty, skip`);
-        logFile.append({ target: backupDirectoryPath, source: sourceDirectoryPath, type: 'directory', status: 'skip' })
+        logFile.append({ target: backupDirectoryPath, source: sourceDirectoryPath, type: 'directory', status: 'skip', application });
         return;
       }
     }
@@ -111,11 +115,11 @@ async function backupDirectory(
   )
     .then(() => {
       logger.event(`Directory ${action} success: ${sourceDirectoryPath} -> ${backupDirectoryPath}`);
-      logFile.append({ target: backupDirectoryPath, source: sourceDirectoryPath, type: 'directory', status: 'success' })
+      logFile.append({ target: backupDirectoryPath, source: sourceDirectoryPath, type: 'directory', status: 'success', application });
     })
     .catch(() => {
       logger.error(`Directory ${action} error: ${sourceDirectoryPath} -> ${backupDirectoryPath}`);
-      logFile.append({ target: backupDirectoryPath, source: sourceDirectoryPath, type: 'directory', status: 'error' })
+      logFile.append({ target: backupDirectoryPath, source: sourceDirectoryPath, type: 'directory', status: 'error', application });
     });
 }
 
@@ -156,69 +160,76 @@ async function backup(
   } = config;
 
   for (const [filePath, isBackup] of Object.entries(configurationFiles)) {
-    if (isBackup) {
-      let sourceFilePath = resolveHome(filePath);
-      let backupFilePath = path.join(storagePath, filePath);
+    if (!isBackup) {
+      logger.debug(`skip file: ${filePath}`);
+      continue;
+    }
+    let sourceFilePath = resolveHome(filePath);
+    let backupFilePath = path.join(storagePath, filePath);
 
-      if (restore) {
-        [sourceFilePath, backupFilePath] = [backupFilePath, sourceFilePath];
+    const mergedOptions: BackupOptionsWithApp = {
+      ...options,
+      application: appConfig.application.name,
+    }
 
-        // 上游 $HOME (通常指还原别人的备份文件, 他们的 $HOME 不一样)
-        const upstreamHome = process.env.BACKUP_UPSTREAM_HOME,
-          restoreHome = resolveHome();
-        if (
-          typeof upstreamHome === 'string' &&
-          upstreamHome.length > 0 &&
-          upstreamHome !== restoreHome
-        ) {
-          const realBackedPath = path.join(storagePath, upstreamHome);
-          const restoredPath = path.join(storagePath, restoreHome);
+    if (restore) {
+      [sourceFilePath, backupFilePath] = [backupFilePath, sourceFilePath];
 
-          logger.debug(`[restore] upstream home: ${realBackedPath} -> ${restoredPath}`);
+      // 上游 $HOME (通常指还原别人的备份文件, 他们的 $HOME 不一样)
+      const upstreamHome = process.env.BACKUP_UPSTREAM_HOME,
+        restoreHome = resolveHome();
+      if (
+        typeof upstreamHome === 'string' &&
+        upstreamHome.length > 0 &&
+        upstreamHome !== restoreHome
+      ) {
+        const realBackedPath = path.join(storagePath, upstreamHome);
+        const restoredPath = path.join(storagePath, restoreHome);
 
-          if (sourceFilePath.startsWith(restoredPath)) {
-            const relative = path.relative(restoredPath, sourceFilePath);
-            sourceFilePath = path.join(realBackedPath, relative);
-          }
+        logger.debug(`[restore] upstream home: ${realBackedPath} -> ${restoredPath}`);
+
+        if (sourceFilePath.startsWith(restoredPath)) {
+          const relative = path.relative(restoredPath, sourceFilePath);
+          sourceFilePath = path.join(realBackedPath, relative);
         }
       }
+    }
 
-      if (!fs.existsSync(sourceFilePath)) {
-        logger.debug(`the file or directory does not exist: ${sourceFilePath}, no ${action} is required`);
-        continue;
-      }
+    if (!fs.existsSync(sourceFilePath)) {
+      logger.debug(`the file or directory does not exist: ${sourceFilePath}, no ${action} is required`);
+      continue;
+    }
 
 
-      if (
-        sourceFilePath === backupFilePath ||
-        path.resolve(sourceFilePath) === path.resolve(backupFilePath)
-      ) {
-        logger.error(`source file path and ${action} file path are the same: ${sourceFilePath}`);
-        continue;
-      }
+    if (
+      sourceFilePath === backupFilePath ||
+      path.resolve(sourceFilePath) === path.resolve(backupFilePath)
+    ) {
+      logger.error(`source file path and ${action} file path are the same: ${sourceFilePath}`);
+      continue;
+    }
 
-      if (isPathInside(backupFilePath, sourceFilePath)) {
-        logger.error(`source file path is inside ${action} file path: ${sourceFilePath} -> ${backupFilePath}`);
-        continue;
-      }
+    if (isPathInside(backupFilePath, sourceFilePath)) {
+      logger.error(`source file path is inside ${action} file path: ${sourceFilePath} -> ${backupFilePath}`);
+      continue;
+    }
 
-      const stats = await fs.stat(sourceFilePath);
+    const stats = await fs.stat(sourceFilePath);
 
-      if (stats.isDirectory()) {
-        await backupDirectory(
-          sourceFilePath,
-          backupFilePath,
-          options,
-        );
-      }
+    if (stats.isDirectory()) {
+      await backupDirectory(
+        sourceFilePath,
+        backupFilePath,
+        mergedOptions,
+      );
+    }
 
-      if (stats.isFile()) {
-        await backupFile(
-          sourceFilePath,
-          backupFilePath,
-          options,
-        );
-      }
+    if (stats.isFile()) {
+      await backupFile(
+        sourceFilePath,
+        backupFilePath,
+        mergedOptions,
+      );
     }
   }
 }
