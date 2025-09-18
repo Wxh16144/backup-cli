@@ -44,6 +44,7 @@ export class LogFile {
     source: string,
     type: 'file' | 'directory',
     status: 'success' | 'error' | 'skip',
+    application: string,
   }) {
     const obj = {
       ...data,
