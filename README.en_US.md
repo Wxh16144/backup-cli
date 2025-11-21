@@ -41,6 +41,8 @@ backup-cli -c
 
 ### Prune Backup
 
+> Clean up files in the existing backup directory that do not exist locally or in the configuration
+
 ```bash
 backup-cli -p
 ```
@@ -56,7 +58,7 @@ Use `backup-cli -h` to see the latest usage instructions:
     -f, --force: force to backup (overwrite files).
     -c, --config: view config.
     -r, --restore: restore backup.
-    -p, --prune: delete files from backup that do not exist locally.
+    -p, --prune: delete files from backup that do not exist locally or are no longer in config.
     -h, --help: show help.
     -d, --debug: show debug info.
     -v, --version: show version. vx.x.x

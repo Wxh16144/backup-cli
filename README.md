@@ -41,6 +41,8 @@ backup-cli -c
 
 ### 修剪备份
 
+> 清理现有备份目录中不存在于本地或配置中的文件
+
 ```bash
 backup-cli -p
 ```
@@ -56,7 +58,7 @@ backup-cli -p
     -f, --force: force to backup (overwrite files).
     -c, --config: view config.
     -r, --restore: restore backup.
-    -p, --prune: delete files from backup that do not exist locally.
+    -p, --prune: delete files from backup that do not exist locally or are no longer in config.
     -h, --help: show help.
     -d, --debug: show debug info.
     -v, --version: show version. vx.x.x
