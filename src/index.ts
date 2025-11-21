@@ -24,6 +24,7 @@ const argv = mri<Argv>(process.argv.slice(2), {
     f: 'force',
     c: 'config',
     r: 'restore',
+    p: 'prune',
   },
 });
 
@@ -41,6 +42,7 @@ async function run(args: Argv = argv) {
     -${c.bold('f')}, --force: force to backup (overwrite files).
     -${c.bold('c')}, --config: view config.
     -${c.bold('r')}, --restore: restore backup.
+    -${c.bold('p')}, --prune: delete files from backup that do not exist locally.
     -${c.bold('h')}, --help: show help.
     -${c.bold('d')}, --debug: show debug info.
     -${c.bold('v')}, --version: show version. ${c.green('v' + pkg.version)}

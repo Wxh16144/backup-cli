@@ -43,7 +43,7 @@ export class LogFile {
     target: string,
     source: string,
     type: 'file' | 'directory',
-    status: 'success' | 'error' | 'skip',
+    status: 'success' | 'error' | 'skip' | 'pruned',
     application: string,
   }) {
     const obj = {

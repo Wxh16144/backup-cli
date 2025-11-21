@@ -8,6 +8,7 @@ export interface Argv {
   list?: boolean;
   debug?: boolean;
   force?: boolean;
+  prune?: boolean;
   config?: string;
   restore?: boolean;
   _: string[];

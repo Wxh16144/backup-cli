@@ -39,6 +39,12 @@ backup-cli -l
 backup-cli -c
 ```
 
+### Prune Backup
+
+```bash
+backup-cli -p
+```
+
 ### CLI Options
 
 Use `backup-cli -h` to see the latest usage instructions:
@@ -50,6 +56,7 @@ Use `backup-cli -h` to see the latest usage instructions:
     -f, --force: force to backup (overwrite files).
     -c, --config: view config.
     -r, --restore: restore backup.
+    -p, --prune: delete files from backup that do not exist locally.
     -h, --help: show help.
     -d, --debug: show debug info.
     -v, --version: show version. vx.x.x
