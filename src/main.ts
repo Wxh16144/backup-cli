@@ -3,6 +3,7 @@ import path from "path";
 import fs from "fs-extra";
 import backup from "./backup";
 import prune from "./prune";
+
 import type { Argv } from "./type";
 import type { LoggerType } from './logger'
 import { getAppConfigs, getApps, loadAppsConfigs } from './list'
@@ -85,18 +86,7 @@ async function main(args: Argv, { logger }: Options) {
   const logFile = new LogFile(actionPrefix, config.storage?.logs);
 
   if (args.prune) {
-    for (const appConfig of appsConfigs) {
-      logger.info(`${actionPrefix} ${c.bold(appConfig.application.name)} ...`);
-      await prune(
-        appConfig,
-        finalConfig,
-        {
-          logger,
-          logFile,
-        }
-      );
-      logger.info(`${actionPrefix} ${c.bold(appConfig.application.name)} ${c.green('done')}\n`);
-    }
+    await prune(appsConfigs, finalConfig, { logger, logFile });
     console.log(c.green().bold(`[${new Date().toLocaleTimeString(undefined, { hour12: false })}] Successful ${actionPrefix.toLowerCase()} finished!`));
     return;
   }
