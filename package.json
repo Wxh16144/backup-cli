@@ -16,7 +16,7 @@
   },
   "files": [
     "applications",
-    "mackup/mackup/applications",
+    "mackup/src/mackup/applications",
     "index.js",
     "dist"
   ],

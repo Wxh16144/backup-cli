@@ -13,7 +13,7 @@ import type { LoggerType } from './logger'
 
 export async function getAppConfigs() {
   // https://github.com/lra/mackup/blob/master/LICENSE
-  const _defaultAppDir = resolveProjectRoot('mackup/mackup/applications');
+  const _defaultAppDir = resolveProjectRoot('mackup/src/mackup/applications');
   const _defaultCustomAppDirPath = resolveHome(CUSTOM_APP_CONFIG_DIR);
 
   const defaultApps = await glob.sync(`*${CONFIG_FILE_EXT}`, {
