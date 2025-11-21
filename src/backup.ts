@@ -5,8 +5,8 @@ import util from 'util';
 import c from 'kleur';
 import type { LoggerType } from "./logger";
 import type { AppConfig, Config } from "./type";
-import { isPathInside, resolveHome, resolveXDGConfig, handleConfigFiles } from './util';
-import type { LogFile } from './log';
+import { isPathInside, resolveHome, handleConfigFiles } from './util';
+import type { LogFile } from './log-file';
 
 const readdir = util.promisify(fs.readdir);
 

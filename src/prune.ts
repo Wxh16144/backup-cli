@@ -4,7 +4,7 @@ import fg from 'fast-glob';
 import type { LoggerType } from "./logger";
 import type { AppConfig, Config } from "./type";
 import { resolveHome, handleConfigFiles, isPathInside } from './util';
-import type { LogFile } from './log';
+import type { LogFile } from './log-file';
 
 type PruneOptions = {
   logger: LoggerType;

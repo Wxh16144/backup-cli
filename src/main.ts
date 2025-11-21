@@ -8,7 +8,7 @@ import type { Argv } from "./type";
 import type { LoggerType } from './logger'
 import { getAppConfigs, getApps, loadAppsConfigs } from './list'
 import { dividerLine, getConfig, merge } from "./util";
-import { LogFile } from "./log";
+import { LogFile } from "./log-file";
 
 interface Options {
   logger: LoggerType;
