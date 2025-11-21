@@ -4,6 +4,7 @@
 
 [![npm](https://img.shields.io/npm/v/@wuxh/backup-cli.svg?style=for-the-badge)](https://www.npmjs.com/package/@wuxh/backup-cli)
 [![npm](https://img.shields.io/npm/dt/@wuxh/backup-cli.svg?style=for-the-badge)](https://www.npmjs.com/package/@wuxh/backup-cli)
+[![License](https://img.shields.io/badge/license-GPL--3.0-blue.svg?style=for-the-badge)](./LICENSE)
 
 [简体中文](./README.md) | English
 
@@ -153,7 +154,9 @@ You can then press F5 in VSCode to start the debugger, [launch.json](./.vscode/l
 
 ## LICENSE
 
-[MIT](./LICENSE)
+[GPL-3.0-or-later](./LICENSE)
+
+Since this project uses application configurations from [mackup](https://github.com/lra/mackup) (via git submodule), which is licensed under GPLv3, this project is also distributed under the GPLv3 license.
 
 ## Reference
 
