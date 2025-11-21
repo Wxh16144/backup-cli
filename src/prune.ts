@@ -104,6 +104,8 @@ export async function prune(
     onlyFiles: true,  // 只处理文件，目录将在清理阶段处理
   });
 
+  let prunedCount = 0;
+
   for (const file of allBackupFiles) {
     // Normalize path for comparison
     const normalizedFile = path.resolve(file);
@@ -122,6 +124,7 @@ export async function prune(
     // 删除孤儿文件或过期文件
     try {
       await fs.remove(file);
+      prunedCount++;
       logger.warn(`[Prune] Removed orphaned file: ${file}`);
       await logFile.append({
         target: file,
@@ -137,6 +140,12 @@ export async function prune(
 
   // ========== CLEANUP ==========
   await removeEmptyDirs(storagePath);
+
+  if (prunedCount === 0) {
+    logger.info('No files needed pruning.');
+  } else {
+    logger.info(`Pruned ${prunedCount} files.`);
+  }
 }
 
 export default prune;
