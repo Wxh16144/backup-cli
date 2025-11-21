@@ -2,6 +2,7 @@ import c from "kleur";
 import path from "path";
 import fs from "fs-extra";
 import backup from "./backup";
+import prune from "./prune";
 import type { Argv } from "./type";
 import type { LoggerType } from './logger'
 import { getAppConfigs, getApps, loadAppsConfigs } from './list'
@@ -21,7 +22,7 @@ async function main(args: Argv, { logger }: Options) {
 
   const needBackupApps = await getApps(appConfigPaths, config);
   const needBackupAppNames = Object.keys(needBackupApps);
-  const actionPrefix = args.restore ? 'Restore' : 'Backup';
+  const actionPrefix = args.restore ? 'Restore' : (args.prune ? 'Prune' : 'Backup');
 
   if (args.list) {
     logger.info(`Found ${appNames.length} apps, ${needBackupAppNames.length} of them need ${c.bold(actionPrefix.toLowerCase())}`);
@@ -82,6 +83,23 @@ async function main(args: Argv, { logger }: Options) {
   fs.ensureDirSync(logsPath); // always create logs directory
 
   const logFile = new LogFile(actionPrefix, config.storage?.logs);
+
+  if (args.prune) {
+    for (const appConfig of appsConfigs) {
+      logger.info(`${actionPrefix} ${c.bold(appConfig.application.name)} ...`);
+      await prune(
+        appConfig,
+        finalConfig,
+        {
+          logger,
+          logFile,
+        }
+      );
+      logger.info(`${actionPrefix} ${c.bold(appConfig.application.name)} ${c.green('done')}\n`);
+    }
+    console.log(c.green().bold(`[${new Date().toLocaleTimeString(undefined, { hour12: false })}] Successful ${actionPrefix.toLowerCase()} finished!`));
+    return;
+  }
 
   for (const appConfig of appsConfigs) {
     logger.info(`${actionPrefix} ${c.bold(appConfig.application.name)} ...`);

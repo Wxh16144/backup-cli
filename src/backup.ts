@@ -5,7 +5,7 @@ import util from 'util';
 import c from 'kleur';
 import type { LoggerType } from "./logger";
 import type { AppConfig, Config } from "./type";
-import { isPathInside, resolveHome, resolveXDGConfig } from './util';
+import { isPathInside, resolveHome, resolveXDGConfig, handleConfigFiles } from './util';
 import type { LogFile } from './log';
 
 const readdir = util.promisify(fs.readdir);
@@ -121,22 +121,6 @@ async function backupDirectory(
       logger.error(`Directory ${action} error: ${sourceDirectoryPath} -> ${backupDirectoryPath}`);
       logFile.append({ target: backupDirectoryPath, source: sourceDirectoryPath, type: 'directory', status: 'error', application });
     });
-}
-
-function handleConfigFiles(appConfig: AppConfig) {
-  const finalConfigFiles: Record<string, boolean> = {
-    ...(appConfig.configuration_files ?? {}),
-  };
-
-  const xdgConfigFiles = appConfig.xdg_configuration_files ?? {};
-
-  for (const [filePath, isBackup] of Object.entries(xdgConfigFiles)) {
-    if (path.isAbsolute(filePath)) continue; // Unsupported absolute path
-
-    finalConfigFiles[resolveXDGConfig(filePath)] = isBackup;
-  }
-
-  return finalConfigFiles;
 }
 
 async function backup(

@@ -4,7 +4,7 @@ import url from 'url';
 import fs from 'fs';
 import ini from 'ini';
 import c from "kleur";
-import { Config, Obj } from './type';
+import { Config, Obj, AppConfig } from './type';
 import type { LoggerType } from './logger';
 
 const __filename = url.fileURLToPath(import.meta.url);
@@ -98,4 +98,20 @@ export function dividerLine(
   const left = repeat.repeat(leftLength);
   const right = repeat.repeat(fullLength - leftLength - textLength);
   return style(`${left}${text.length ? ` ${text} ` : ''}${right}`);
+}
+
+export function handleConfigFiles(appConfig: AppConfig) {
+  const finalConfigFiles: Record<string, boolean> = {
+    ...(appConfig.configuration_files ?? {}),
+  };
+
+  const xdgConfigFiles = appConfig.xdg_configuration_files ?? {};
+
+  for (const [filePath, isBackup] of Object.entries(xdgConfigFiles)) {
+    if (path.isAbsolute(filePath)) continue; // Unsupported absolute path
+
+    finalConfigFiles[resolveXDGConfig(filePath)] = isBackup;
+  }
+
+  return finalConfigFiles;
 }

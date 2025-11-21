@@ -39,6 +39,12 @@ backup-cli -l
 backup-cli -c
 ```
 
+### 修剪备份
+
+```bash
+backup-cli -p
+```
+
 ### CLI 命令
 
 使用 `backup-cli -h` 查看最新的使用说明：
@@ -50,6 +56,7 @@ backup-cli -c
     -f, --force: force to backup (overwrite files).
     -c, --config: view config.
     -r, --restore: restore backup.
+    -p, --prune: delete files from backup that do not exist locally.
     -h, --help: show help.
     -d, --debug: show debug info.
     -v, --version: show version. vx.x.x
