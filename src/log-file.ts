@@ -7,7 +7,7 @@ export class LogFile {
   private operation;
 
   constructor(
-    operation: 'Restore' | 'Backup',
+    operation: 'Restore' | 'Backup' | 'Prune',
     basePath: string = process.cwd()
   ) {
     this.basePath = basePath;
