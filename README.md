@@ -4,6 +4,7 @@
 
 [![npm](https://img.shields.io/npm/v/@wuxh/backup-cli.svg?style=for-the-badge)](https://www.npmjs.com/package/@wuxh/backup-cli)
 [![npm](https://img.shields.io/npm/dt/@wuxh/backup-cli.svg?style=for-the-badge)](https://www.npmjs.com/package/@wuxh/backup-cli)
+[![License](https://img.shields.io/badge/license-GPL--3.0-blue.svg?style=for-the-badge)](./LICENSE)
 
 简体中文 | [English](./README.en_US.md) | [Bilibili#BV1dL411D7kh](https://bilibili.com/video/BV1dL411D7kh)
 
@@ -155,7 +156,9 @@ git clone git@github.com:Wxh16144/backup-cli.git && cd backup-cli \
 
 ## LICENSE
 
-[MIT](./LICENSE)
+[GPL-3.0-or-later](./LICENSE)
+
+由于本项目使用了 [mackup](https://github.com/lra/mackup) 的应用程序配置（通过 git submodule），而 mackup 采用 GPLv3 协议，因此本项目也遵循 GPLv3 协议进行分发。
 
 ## 实现参考
 
