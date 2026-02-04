@@ -84,6 +84,11 @@ export function isPathInside(childPath: string, parentPath: string) {
   );
 }
 
+export function toRelativePath(filePath: string, cwd = process.cwd()) {
+  const relativePath = path.relative(cwd, filePath);
+  return relativePath.startsWith('.') ? relativePath : `.${path.sep}${relativePath}`;
+}
+
 export function dividerLine(
   text = '',
   repeat = '-',

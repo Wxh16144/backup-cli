@@ -5,7 +5,7 @@ import util from 'util';
 import c from 'kleur';
 import type { LoggerType } from "./logger";
 import type { AppConfig, Config } from "./type";
-import { isPathInside, resolveHome, handleConfigFiles } from './util';
+import { isPathInside, resolveHome, handleConfigFiles, toRelativePath } from './util';
 import type { LogFile } from './log-file';
 
 const readdir = util.promisify(fs.readdir);
@@ -61,6 +61,16 @@ async function backupFile(
     fs.ensureDirSync(backupFileDirectory);
   }
 
+  const [
+    showSourceFilePath,
+    showBackupFilePath
+  ] = (function () {
+    if (restore) {
+      return [toRelativePath(sourceFilePath), backupFilePath];
+    }
+    return [sourceFilePath, toRelativePath(backupFilePath)];
+  }());
+
   return fs.copy(
     sourceFilePath,
     backupFilePath,
@@ -69,11 +79,11 @@ async function backupFile(
     }
   )
     .then(() => {
-      logger.event(`File ${action} success: ${sourceFilePath} -> ${backupFilePath}`);
+      logger.event(`File ${action} success: ${showSourceFilePath} -> ${showBackupFilePath}`);
       logFile.append({ target: backupFilePath, source: sourceFilePath, type: 'file', status: 'success', application });
     })
     .catch(() => {
-      logger.error(`File ${action} error: ${sourceFilePath} -> ${backupFilePath}`);
+      logger.error(`File ${action} error: ${showSourceFilePath} -> ${showBackupFilePath}`);
       logFile.append({ target: backupFilePath, source: sourceFilePath, type: 'file', status: 'error', application });
     });
 
