@@ -106,6 +106,9 @@ name = Git
 git/config
 ```
 
+> [!TIP]
+> You can set the `BACKUP_CUSTOM_APP_DIR` environment variable to point to the locally cloned `mackup/applications` directory (e.g., `/path/to/mackup/src/mackup/applications`). This allows you to stay up-to-date with the upstream [mackup](https://github.com/lra/mackup) updates without waiting for a new release of `backup-cli`.
+
 ## Advanced
 
 ### Forced Restore

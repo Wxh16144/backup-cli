@@ -106,6 +106,9 @@ name = Git
 git/config
 ```
 
+> [!TIP]
+> 你可以通过设置 `BACKUP_CUSTOM_APP_DIR` 环境变量指向本地克隆的 `mackup/applications` 目录（例如 `/path/to/mackup/src/mackup/applications`）。这样可以实时关联上游 [mackup](https://github.com/lra/mackup) 的更新，而无需等待 `backup-cli` 或 `mackup` 发布新版本。
+
 ## 高级用法
 
 ### 强制还原
