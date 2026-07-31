@@ -8,13 +8,19 @@
       "type": "node",
       "request": "launch",
       "name": "debugger backup-cli",
-      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/esno",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "--import",
+        "tsx"
+      ],
       "program": "${workspaceFolder}/dev.ts",
       "args": [
         // "-d", // debug
         "-l", // app list
         // "--config", // show config
         // "-p", // prune
+        // "--app=zsh",
+        // "--force"
       ],
       "cwd": "${workspaceFolder}",
       "env": {
