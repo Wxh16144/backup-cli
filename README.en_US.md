@@ -28,6 +28,20 @@ backup-cli
 backup-cli -r
 ```
 
+### Select Specific Apps
+
+```bash
+backup-cli --app=zsh
+backup-cli --app=zsh,git
+backup-cli --app=zsh --app=git
+```
+
+### Interactive App Selection
+
+```bash
+backup-cli --select
+```
+
 ### Support Apps
 
 ```bash
@@ -56,6 +70,8 @@ Use `backup-cli -h` to see the latest usage instructions:
     npx @wuxh/backup-cli [options]
     ----------------------------------------
     -l, --list: list all apps.
+    -a, --app: only run selected app(s); supports repeated flags and comma-separated values.
+    -s, --select: interactively search and select apps.
     -f, --force: force to backup (overwrite files).
     -c, --config: view config.
     -r, --restore: restore backup.
@@ -66,6 +82,8 @@ Use `backup-cli -h` to see the latest usage instructions:
     ----------------------------------------
     e.g. backup-cli -h
 ```
+
+Precedence: `--app` and `--select` are explicit selections and take precedence over `applications_to_sync` / `applications_to_ignore`. If both `--app` and `--select` are provided, `--app` wins.
 
 ## Config
 
@@ -127,17 +145,20 @@ When attempting to restore files from backup directories into your `$HOME` direc
 
 Each backup or restore operation generates a log file in the `storage.logs` directory:
 
-- File name format: `[Backup|Restore]-YYYY-MM-DD_HHMMSS.jsonl`, e.g. `Backup-2025-09-05_153012.jsonl`
-- Content: operation type, source file, target path, status, etc.
+- File name format: `[Backup|Restore|Prune]-*.jsonl`; explicit app selections add either the app name or a short selection summary to the file name
+- The first line is a run-level `meta` record, followed by per-file operation records
 
 <details>
     <summary>View log example</summary>
 
 ```jsonl
+{"kind":"meta","operation":"Backup","selectionSource":"app","selectedApps":["git"],"selectedAppCount":1,"hasConfigOverrides":false,"timestamp":"2026-07-31T12:00:00.000Z","fileName":"Backup-git-2026-07-31-120000.jsonl"}
 {"target":"../backup/.gitconfig","source":"/Users/root/.gitconfig","type":"file","status":"success"}
 {"target":"../backup/.gnupg/gpg.conf","source":"/Users/root/.gnupg/gpg.conf","type":"file","status":"success"}
 {"target":"../backup/.cargo/config","source":"/Users/root/.cargo/config","type":"file","status":"success"}
 ```
+
+</details>
 
 ## Who is Using
 

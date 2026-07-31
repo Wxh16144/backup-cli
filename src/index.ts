@@ -3,7 +3,7 @@ import { fileURLToPath } from 'url';
 import path from "path";
 import c from "kleur";
 import mri from "mri";
-import type { Argv } from "./type";
+import type { Argv, NormalizedArgv } from "./type";
 import main from "./main";
 import Logger from "./logger";
 
@@ -17,9 +17,11 @@ const command = Object.keys(pkg.bin ?? {})[0] ?? pkg.name;
 
 const argv = mri<Argv>(process.argv.slice(2), {
   alias: {
+    a: 'app',
     h: 'help',
     v: 'version',
     l: 'list',
+    s: 'select',
     d: 'debug',
     f: 'force',
     c: 'config',
@@ -28,7 +30,23 @@ const argv = mri<Argv>(process.argv.slice(2), {
   },
 });
 
+function normalizeAppArgs(app: Argv['app']) {
+  if (!app) return undefined;
+
+  const appNames = (Array.isArray(app) ? app : [app])
+    .flatMap(item => String(item).split(','))
+    .map(item => item.trim())
+    .filter(Boolean);
+
+  return Array.from(new Set(appNames));
+}
+
 async function run(args: Argv = argv) {
+  const normalizedArgs: NormalizedArgv = {
+    ...args,
+    app: normalizeAppArgs(args.app),
+  };
+
   if (args.version) {
     console.log(`${c.bold(pkg.name)}: ${c.green('v' + pkg.version)}`);
     return;
@@ -39,6 +57,8 @@ async function run(args: Argv = argv) {
     npx ${c.bold(command)} [options]
     ----------------------------------------
     -${c.bold('l')}, --list: list all apps.
+    -${c.bold('a')}, --app: only run selected app(s); supports repeated flags and comma-separated values.
+    -${c.bold('s')}, --select: interactively search and select apps.
     -${c.bold('f')}, --force: force to backup (overwrite files).
     -${c.bold('c')}, --config: view config.
     -${c.bold('r')}, --restore: restore backup.
@@ -52,9 +72,9 @@ async function run(args: Argv = argv) {
     return;
   }
 
-  main(args, {
+  main(normalizedArgs, {
     logger: new Logger({
-      isDebug: args.debug || process.env.DEBUG === command,
+      isDebug: normalizedArgs.debug || process.env.DEBUG === command,
     })
   });
 }
