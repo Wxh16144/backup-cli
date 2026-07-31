@@ -1,17 +1,23 @@
 export type Obj = Record<PropertyKey, any>
 
 export interface Argv {
+  app?: string | string[];
   branch?: string;
   glob?: string;
   help?: boolean;
   version?: boolean;
   list?: boolean;
+  select?: boolean;
   debug?: boolean;
   force?: boolean;
   prune?: boolean;
   config?: string;
   restore?: boolean;
   _: string[];
+}
+
+export interface NormalizedArgv extends Omit<Argv, 'app'> {
+  app?: string[];
 }
 
 // appConfig

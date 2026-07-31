@@ -28,6 +28,20 @@ backup-cli
 backup-cli -r
 ```
 
+### 指定应用
+
+```bash
+backup-cli --app=zsh
+backup-cli --app=zsh,git
+backup-cli --app=zsh --app=git
+```
+
+### 交互选择应用
+
+```bash
+backup-cli --select
+```
+
 ### 支持的应用程序
 
 ```bash
@@ -56,6 +70,8 @@ backup-cli -p
     npx @wuxh/backup-cli [options]
     ----------------------------------------
     -l, --list: list all apps.
+    -a, --app: only run selected app(s); supports repeated flags and comma-separated values.
+    -s, --select: interactively search and select apps.
     -f, --force: force to backup (overwrite files).
     -c, --config: view config.
     -r, --restore: restore backup.
@@ -66,6 +82,8 @@ backup-cli -p
     ----------------------------------------
     e.g. backup-cli -h
 ```
+
+优先级说明：`--app` 和 `--select` 都属于显式选择；显式选择优先于配置文件中的 `applications_to_sync` / `applications_to_ignore`。如果同时传了 `--app` 和 `--select`，以 `--app` 为准。
 
 ## Config
 
@@ -127,13 +145,14 @@ git/config
 
 每次备份或还原操作都会在 `storage.logs` 目录下生成日志文件：
 
-- 文件名格式：`[Backup|Restore]-YYYY-MM-DD_HHMMSS.jsonl`，例如：`Backup-2025-09-05_153012.jsonl`
-- 记录内容：操作类型、源文件、目标路径、状态等详细信息
+- 文件名格式：`[Backup|Restore|Prune]-*.jsonl`；如果显式指定了应用，文件名会附带应用名或选中数量摘要
+- 第一行是本次运行的 `meta` 记录，后续每行是具体文件操作记录
 
 <details>
     <summary>查看日志示例</summary>
 
 ```jsonl
+{"kind":"meta","operation":"Backup","selectionSource":"app","selectedApps":["git"],"selectedAppCount":1,"hasConfigOverrides":false,"timestamp":"2026-07-31T12:00:00.000Z","fileName":"Backup-git-2026-07-31-120000.jsonl"}
 {"target":"../backup/.gitconfig","source":"/Users/root/.gitconfig","type":"file","status":"success"}
 {"target":"../backup/.gnupg/gpg.conf","source":"/Users/root/.gnupg/gpg.conf","type":"file","status":"success"}
 {"target":"../backup/.cargo/config","source":"/Users/root/.cargo/config","type":"file","status":"success"}

@@ -1,17 +1,29 @@
 import fs from 'fs-extra';
 import path from 'path';
 
+type LogOperation = 'Restore' | 'Backup' | 'Prune';
+type SelectionSource = 'config' | 'app' | 'select';
+
+interface LogScope {
+  selectedApps: string[];
+  selectionSource: SelectionSource;
+  hasConfigOverrides: boolean;
+}
+
 export class LogFile {
   private basePath;
   private fileName;
   private operation;
+  private scope;
 
   constructor(
-    operation: 'Restore' | 'Backup' | 'Prune',
-    basePath: string = process.cwd()
+    operation: LogOperation,
+    basePath: string = process.cwd(),
+    scope?: LogScope,
   ) {
     this.basePath = basePath;
     this.operation = operation;
+    this.scope = scope;
 
     this.fileName = this.formatLogFileName(operation);
   }
@@ -23,6 +35,14 @@ export class LogFile {
     );
   }
 
+  private sanitizeFileNamePart(value: string) {
+    return value
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
   private formatLogFileName(operation: string) {
     const now = new Date();
     const pad = (n: number) => n.toString().padStart(2, '0');
@@ -32,11 +52,35 @@ export class LogFile {
       pad(now.getDate()),
       [pad(now.getHours()), pad(now.getMinutes()), pad(now.getSeconds())].join('')
     ].join('-');
-    return `${operation}-${dateStr}.jsonl`;
+
+    let scopeSuffix = '';
+    if (this.scope?.selectionSource !== 'config') {
+      if (this.scope.selectedApps.length === 1) {
+        scopeSuffix = `-${this.sanitizeFileNamePart(this.scope.selectedApps[0])}`;
+      } else if (this.scope.selectedApps.length > 1) {
+        scopeSuffix = `-selected-${this.scope.selectedApps.length}apps`;
+      }
+    }
+
+    return `${operation}${scopeSuffix}-${dateStr}.jsonl`;
   }
 
   get isRestored() {
     return String(this.operation).toLowerCase() === 'restore';
+  }
+
+  async init() {
+    const now = new Date();
+    return this.write(JSON.stringify({
+      kind: 'meta',
+      operation: this.operation,
+      selectionSource: this.scope?.selectionSource ?? 'config',
+      selectedApps: this.scope?.selectedApps ?? [],
+      selectedAppCount: this.scope?.selectedApps.length ?? 0,
+      hasConfigOverrides: this.scope?.hasConfigOverrides ?? false,
+      timestamp: now.toISOString(),
+      fileName: this.fileName,
+    }));
   }
 
   async append(data: {
