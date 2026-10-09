@@ -81,7 +81,7 @@ export async function prune(
 
       //  计算预期的备份路径
       //  必须与 backup.ts 中的逻辑相匹配: path.join(storagePath, filePath)
-      const backupFilePath = path.join(storagePath, filePath);
+      const backupFilePath = path.resolve(storagePath, filePath);
       
       // 区分文件和目录
       const stat = await fs.stat(localPath);
@@ -114,10 +114,7 @@ export async function prune(
     if (validBackupFiles.has(normalizedFile)) continue;
 
     // 验证通过，表明该文件位于有效的备份目录中
-    const isInsideValidDir = validBackupDirs.some(dir => {
-        const normalizedDir = path.resolve(dir);
-        return isPathInside(normalizedFile, normalizedDir);
-    });
+    const isInsideValidDir = validBackupDirs.some(dir => isPathInside(normalizedFile, dir));
     
     if (isInsideValidDir) continue;
 

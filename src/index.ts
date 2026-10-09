@@ -6,6 +6,7 @@ import mri from "mri";
 import type { Argv, NormalizedArgv } from "./type";
 import main from "./main";
 import Logger from "./logger";
+import { normalizeAppArgs } from "./util";
 
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -29,17 +30,6 @@ const argv = mri<Argv>(process.argv.slice(2), {
     p: 'prune',
   },
 });
-
-function normalizeAppArgs(app: Argv['app']) {
-  if (!app) return undefined;
-
-  const appNames = (Array.isArray(app) ? app : [app])
-    .flatMap(item => String(item).split(','))
-    .map(item => item.trim())
-    .filter(Boolean);
-
-  return Array.from(new Set(appNames));
-}
 
 async function run(args: Argv = argv) {
   const normalizedArgs: NormalizedArgv = {
@@ -72,10 +62,23 @@ async function run(args: Argv = argv) {
     return;
   }
 
+  if (normalizedArgs.restore && normalizedArgs.prune) {
+    console.error(c.red('Cannot use --restore and --prune together.'));
+    process.exitCode = 1;
+    return;
+  }
+
+  // quiet in non-interactive environments: never prompt, skip conflicts instead
+  const quiet = process.env.BACKUP_QUIET === 'true'
+    || !process.stdin.isTTY
+    || !process.stdout.isTTY;
+
   main(normalizedArgs, {
     logger: new Logger({
       isDebug: normalizedArgs.debug || process.env.DEBUG === command,
-    })
+      quietOnly: quiet,
+    }),
+    quiet,
   });
 }
 
