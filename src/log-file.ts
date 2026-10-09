@@ -54,7 +54,7 @@ export class LogFile {
     ].join('-');
 
     let scopeSuffix = '';
-    if (this.scope?.selectionSource !== 'config') {
+    if (this.scope && this.scope.selectionSource !== 'config') {
       if (this.scope.selectedApps.length === 1) {
         scopeSuffix = `-${this.sanitizeFileNamePart(this.scope.selectedApps[0])}`;
       } else if (this.scope.selectedApps.length > 1) {

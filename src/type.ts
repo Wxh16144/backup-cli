@@ -11,7 +11,7 @@ export interface Argv {
   debug?: boolean;
   force?: boolean;
   prune?: boolean;
-  config?: string;
+  config?: boolean;
   restore?: boolean;
   _: string[];
 }

@@ -1,7 +1,7 @@
 {
   "name": "@wuxh/backup-cli",
   "version": "2.2.0",
-  "description": "",
+  "description": "Backup and restore your dotfiles with copy semantics; npm-native, with prune, interactive selection and per-run logs.",
   "homepage": "https://github.com/Wxh16144/backup-cli#readme",
   "repository": {
     "type": "git",
@@ -24,6 +24,7 @@
     "build": "unbuild",
     "dev": "unbuild --stub",
     "start": "node --import tsx ./dev.ts -d",
+    "test": "node --import tsx tests/index.ts",
     "prepublishOnly": "git submodule update --remote && npm run build",
     "typecheck": "tsc --noEmit"
   },
@@ -41,11 +42,15 @@
     "@types/lodash-es": "^4.17.7",
     "@types/node": "^18.11.19",
     "@types/prompts": "^2.4.3",
+    "execa": "^8.0.1",
+    "fs-fixture": "^2.14.0",
+    "manten": "^2.0.0",
     "tsx": "^4.23.1",
+    "typescript": "^5.6.3",
     "unbuild": "^1.1.1"
   },
   "engines": {
-    "node": "^14.18.0 || >=16.0.0"
+    "node": ">=18"
   },
   "publishConfig": {
     "access": "public",

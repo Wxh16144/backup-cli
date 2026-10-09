@@ -2,6 +2,10 @@
 
 > 备份你的配置文件和目录 [为什么重复创造轮子？](https://github.com/lra/mackup/issues/1849#issuecomment-1369963734)，[lra/mackup#1969](https://github.com/lra/mackup/discussions/1969)。
 
+> [!NOTE]
+> mackup 自 [0.9.0](https://github.com/lra/mackup/releases/tag/0.9.0) 起已实现 copy 模式（`mackup backup` / `mackup restore`）。
+> 本项目仍作为个人工具维护，额外提供 mackup 没有的 `prune`、交互选择、`--list` 与日志等能力。
+
 [![npm](https://img.shields.io/npm/v/@wuxh/backup-cli.svg?style=for-the-badge)](https://www.npmjs.com/package/@wuxh/backup-cli)
 [![npm](https://img.shields.io/npm/dt/@wuxh/backup-cli.svg?style=for-the-badge)](https://www.npmjs.com/package/@wuxh/backup-cli)
 [![License](https://img.shields.io/badge/license-GPL--3.0-blue.svg?style=for-the-badge)](./LICENSE)
@@ -92,7 +96,7 @@ backup-cli -p
 ```ini
 [storage]
 ; 备份路径， 默认: 执行命令当前目录
-path = $PWD
+; path = /your/backup/path
 ; 备份目录, 默认: backup
 directory = backup
 

@@ -20,21 +20,63 @@ type BackupOptions = {
   logFile: LogFile;
   force?: boolean;
   restore?: boolean;
+  quiet?: boolean;
 }
 
 interface BackupOptionsWithApp extends BackupOptions {
   application: string;
 }
 
+/**
+ * Pure path derivation shared by backup/restore.
+ * On restore the source/target are swapped, and BACKUP_UPSTREAM_HOME remaps
+ * a backup recorded under another user's home to the current one.
+ */
+export function resolveBackupPaths(
+  filePath: string,
+  storagePath: string,
+  { restore = false, upstreamHome }: { restore?: boolean; upstreamHome?: string } = {},
+) {
+  const home = resolveHome();
+  let sourceFilePath = resolveHome(filePath);
+  let backupFilePath = path.join(storagePath, filePath);
+
+  if (restore) {
+    [sourceFilePath, backupFilePath] = [backupFilePath, sourceFilePath];
+
+    if (
+      typeof upstreamHome === 'string' &&
+      upstreamHome.length > 0 &&
+      upstreamHome !== home
+    ) {
+      const realBackedPath = path.join(storagePath, upstreamHome);
+      const restoredPath = path.join(storagePath, home);
+
+      if (sourceFilePath.startsWith(restoredPath)) {
+        const relative = path.relative(restoredPath, sourceFilePath);
+        sourceFilePath = path.join(realBackedPath, relative);
+      }
+    }
+  }
+
+  return { sourceFilePath, backupFilePath };
+}
+
 async function backupFile(
   sourceFilePath: string,
   backupFilePath: string,
-  { logger, force = false, restore = false, logFile, application }: BackupOptionsWithApp
-) {
+  { logger, force = false, restore = false, quiet = false, logFile, application }: BackupOptionsWithApp
+): Promise<boolean> {
 
   const action = restore ? 'restore' : 'backup';
 
   if (fs.existsSync(backupFilePath) && !force) {
+    if (quiet) {
+      logger.warn(`${action} file ${backupFilePath} already exists, skipped (quiet mode)`);
+      await logFile.append({ target: backupFilePath, source: sourceFilePath, type: 'file', status: 'skip', application });
+      return true;
+    }
+
     logger.warn(`${action} file ${backupFilePath} already exists`);
     const response = await prompts({
       type: 'confirm',
@@ -47,8 +89,8 @@ async function backupFile(
         logger.debug(`${action} file already exists, overwrite`);
       } else {
         logger.debug(`${action} file already exists, skip`);
-        logFile.append({ target: backupFilePath, source: sourceFilePath, type: 'file', status: 'skip', application });
-        return;
+        await logFile.append({ target: backupFilePath, source: sourceFilePath, type: 'file', status: 'skip', application });
+        return true;
       }
     } else {
       process.exit(0);
@@ -71,29 +113,29 @@ async function backupFile(
     return [sourceFilePath, toRelativePath(backupFilePath)];
   }());
 
-  return fs.copy(
-    sourceFilePath,
-    backupFilePath,
-    {
-      dereference: true, // copy symlinks as symlinks
-    }
-  )
-    .then(() => {
-      logger.event(`File ${action} success: ${showSourceFilePath} -> ${showBackupFilePath}`);
-      logFile.append({ target: backupFilePath, source: sourceFilePath, type: 'file', status: 'success', application });
-    })
-    .catch(() => {
-      logger.error(`File ${action} error: ${showSourceFilePath} -> ${showBackupFilePath}`);
-      logFile.append({ target: backupFilePath, source: sourceFilePath, type: 'file', status: 'error', application });
-    });
-
+  try {
+    await fs.copy(
+      sourceFilePath,
+      backupFilePath,
+      {
+        dereference: true, // follow symlinks so the backup is self-contained
+      }
+    );
+    logger.event(`File ${action} success: ${showSourceFilePath} -> ${showBackupFilePath}`);
+    await logFile.append({ target: backupFilePath, source: sourceFilePath, type: 'file', status: 'success', application });
+    return true;
+  } catch (error) {
+    logger.error(`File ${action} error: ${showSourceFilePath} -> ${showBackupFilePath} (${error})`);
+    await logFile.append({ target: backupFilePath, source: sourceFilePath, type: 'file', status: 'error', application });
+    return false;
+  }
 }
 
 async function backupDirectory(
   sourceDirectoryPath: string,
   backupDirectoryPath: string,
-  { logger, force = false, restore = false, logFile, application }: BackupOptionsWithApp
-) {
+  { logger, force = false, restore = false, quiet = false, logFile, application }: BackupOptionsWithApp
+): Promise<boolean> {
   const action = restore ? 'restore' : 'backup';
 
   if (!fs.existsSync(backupDirectoryPath)) {
@@ -102,6 +144,12 @@ async function backupDirectory(
   }
 
   if (!await isDirectoryEmpty(backupDirectoryPath) && !force) {
+    if (quiet) {
+      logger.warn(`${action} directory ${backupDirectoryPath} not empty, skipped (quiet mode)`);
+      await logFile.append({ target: backupDirectoryPath, source: sourceDirectoryPath, type: 'directory', status: 'skip', application });
+      return true;
+    }
+
     const response = await prompts({
       type: 'confirm',
       name: 'overwrite',
@@ -113,24 +161,30 @@ async function backupDirectory(
         logger.debug(`${action} directory not empty, overwrite`);
       } else {
         logger.debug(`${action} directory not empty, skip`);
-        logFile.append({ target: backupDirectoryPath, source: sourceDirectoryPath, type: 'directory', status: 'skip', application });
-        return;
+        await logFile.append({ target: backupDirectoryPath, source: sourceDirectoryPath, type: 'directory', status: 'skip', application });
+        return true;
       }
+    } else {
+      process.exit(0);
     }
   }
 
-  return fs.copy(
-    sourceDirectoryPath,
-    backupDirectoryPath,
-  )
-    .then(() => {
-      logger.event(`Directory ${action} success: ${sourceDirectoryPath} -> ${backupDirectoryPath}`);
-      logFile.append({ target: backupDirectoryPath, source: sourceDirectoryPath, type: 'directory', status: 'success', application });
-    })
-    .catch(() => {
-      logger.error(`Directory ${action} error: ${sourceDirectoryPath} -> ${backupDirectoryPath}`);
-      logFile.append({ target: backupDirectoryPath, source: sourceDirectoryPath, type: 'directory', status: 'error', application });
-    });
+  try {
+    await fs.copy(
+      sourceDirectoryPath,
+      backupDirectoryPath,
+      {
+        dereference: true, // follow symlinks so the backup is self-contained
+      }
+    );
+    logger.event(`Directory ${action} success: ${sourceDirectoryPath} -> ${backupDirectoryPath}`);
+    await logFile.append({ target: backupDirectoryPath, source: sourceDirectoryPath, type: 'directory', status: 'success', application });
+    return true;
+  } catch (error) {
+    logger.error(`Directory ${action} error: ${sourceDirectoryPath} -> ${backupDirectoryPath} (${error})`);
+    await logFile.append({ target: backupDirectoryPath, source: sourceDirectoryPath, type: 'directory', status: 'error', application });
+    return false;
+  }
 }
 
 async function backup(
@@ -144,7 +198,7 @@ async function backup(
 
   if (Object.keys(configurationFiles).length === 0) {
     logger.warn('No configuration files to backup');
-    return;
+    return true;
   }
 
   const action = restore ? 'restore' : 'backup';
@@ -153,40 +207,22 @@ async function backup(
     storage: { directory: storagePath = "backup" } = {}
   } = config;
 
+  let success = true;
+
   for (const [filePath, isBackup] of Object.entries(configurationFiles)) {
     if (!isBackup) {
       logger.debug(`skip file: ${filePath}`);
       continue;
     }
-    let sourceFilePath = resolveHome(filePath);
-    let backupFilePath = path.join(storagePath, filePath);
+
+    const { sourceFilePath, backupFilePath } = resolveBackupPaths(filePath, storagePath, {
+      restore,
+      upstreamHome: process.env.BACKUP_UPSTREAM_HOME,
+    });
 
     const mergedOptions: BackupOptionsWithApp = {
       ...options,
       application: appConfig.application.name,
-    }
-
-    if (restore) {
-      [sourceFilePath, backupFilePath] = [backupFilePath, sourceFilePath];
-
-      // 上游 $HOME (通常指还原别人的备份文件, 他们的 $HOME 不一样)
-      const upstreamHome = process.env.BACKUP_UPSTREAM_HOME,
-        restoreHome = resolveHome();
-      if (
-        typeof upstreamHome === 'string' &&
-        upstreamHome.length > 0 &&
-        upstreamHome !== restoreHome
-      ) {
-        const realBackedPath = path.join(storagePath, upstreamHome);
-        const restoredPath = path.join(storagePath, restoreHome);
-
-        logger.debug(`[restore] upstream home: ${realBackedPath} -> ${restoredPath}`);
-
-        if (sourceFilePath.startsWith(restoredPath)) {
-          const relative = path.relative(restoredPath, sourceFilePath);
-          sourceFilePath = path.join(realBackedPath, relative);
-        }
-      }
     }
 
     if (!fs.existsSync(sourceFilePath)) {
@@ -194,38 +230,41 @@ async function backup(
       continue;
     }
 
-
     if (
       sourceFilePath === backupFilePath ||
       path.resolve(sourceFilePath) === path.resolve(backupFilePath)
     ) {
       logger.error(`source file path and ${action} file path are the same: ${sourceFilePath}`);
+      success = false;
+      continue;
+    }
+
+    // never let a config entry escape the storage root
+    const storageSidePath = restore ? sourceFilePath : backupFilePath;
+    if (!isPathInside(path.resolve(storageSidePath), path.resolve(storagePath))) {
+      logger.error(`configuration file escapes the ${action} directory: ${storageSidePath} (storage: ${storagePath})`);
+      success = false;
       continue;
     }
 
     if (isPathInside(backupFilePath, sourceFilePath)) {
       logger.error(`source file path is inside ${action} file path: ${sourceFilePath} -> ${backupFilePath}`);
+      success = false;
       continue;
     }
 
     const stats = await fs.stat(sourceFilePath);
 
     if (stats.isDirectory()) {
-      await backupDirectory(
-        sourceFilePath,
-        backupFilePath,
-        mergedOptions,
-      );
+      success = (await backupDirectory(sourceFilePath, backupFilePath, mergedOptions)) && success;
     }
 
     if (stats.isFile()) {
-      await backupFile(
-        sourceFilePath,
-        backupFilePath,
-        mergedOptions,
-      );
+      success = (await backupFile(sourceFilePath, backupFilePath, mergedOptions)) && success;
     }
   }
+
+  return success;
 }
 
 export default backup;

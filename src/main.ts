@@ -22,6 +22,7 @@ type SelectedAppsResult = {
 
 interface Options {
   logger: LoggerType;
+  quiet?: boolean;
 }
 
 function getConfiguredAppNames(appMap?: Record<string, boolean>) {
@@ -64,35 +65,32 @@ function buildSelectedApps(
   }, {});
 }
 
-function warnForConfigOverrides(
+export function getConfigOverrideWarnings(
   selectedAppNames: string[],
   configSelectedApps: Record<string, string>,
   config: Config,
-  logger: LoggerType,
   action: string,
 ) {
   const hasSyncFilter = requiresSyncOptIn(config);
-  let hasConfigOverrides = false;
+  const warnings: string[] = [];
 
   for (const appName of selectedAppNames) {
     if (configSelectedApps[appName]) continue;
 
-    hasConfigOverrides = true;
-
     if (config.applications_to_ignore?.[appName]) {
-      logger.warn(`App ${c.bold(appName)} is ignored by config, but it will ${action} because it was explicitly selected.`);
+      warnings.push(`App ${c.bold(appName)} is ignored by config, but it will ${action} because it was explicitly selected.`);
       continue;
     }
 
     if (hasSyncFilter && !config.applications_to_sync?.[appName]) {
-      logger.warn(`App ${c.bold(appName)} is not enabled in applications_to_sync, but it will ${action} because it was explicitly selected.`);
+      warnings.push(`App ${c.bold(appName)} is not enabled in applications_to_sync, but it will ${action} because it was explicitly selected.`);
       continue;
     }
 
-    logger.warn(`App ${c.bold(appName)} is not part of the current config set, but it will ${action} because it was explicitly selected.`);
+    warnings.push(`App ${c.bold(appName)} is not part of the current config set, but it will ${action} because it was explicitly selected.`);
   }
 
-  return hasConfigOverrides;
+  return warnings;
 }
 
 async function promptForAppSelection(
@@ -141,10 +139,11 @@ async function resolveSelectedApps(
       return null;
     }
 
-    const hasConfigOverrides = warnForConfigOverrides(requestedAppNames, needBackupApps, config, logger, action);
+    const overrideWarnings = getConfigOverrideWarnings(requestedAppNames, needBackupApps, config, action);
+    overrideWarnings.forEach(message => logger.warn(message));
 
     return {
-      hasConfigOverrides,
+      hasConfigOverrides: overrideWarnings.length > 0,
       selectedAppNames: requestedAppNames,
       selectedApps: buildSelectedApps(requestedAppNames, apps),
       selectionSource: 'app',
@@ -173,10 +172,11 @@ async function resolveSelectedApps(
       return null;
     }
 
-    const hasConfigOverrides = warnForConfigOverrides(selectedAppNames, needBackupApps, config, logger, action);
+    const overrideWarnings = getConfigOverrideWarnings(selectedAppNames, needBackupApps, config, action);
+    overrideWarnings.forEach(message => logger.warn(message));
 
     return {
-      hasConfigOverrides,
+      hasConfigOverrides: overrideWarnings.length > 0,
       selectedAppNames,
       selectedApps: buildSelectedApps(selectedAppNames, apps),
       selectionSource: 'select',
@@ -191,7 +191,7 @@ async function resolveSelectedApps(
   };
 }
 
-async function main(args: NormalizedArgv, { logger }: Options) {
+async function main(args: NormalizedArgv, { logger, quiet = false }: Options) {
   const config = getConfig({ logger });
   logger.debug(`read config: ${JSON.stringify(config, null, 2)} `);
   const appConfigPaths = await getAppConfigs();
@@ -233,14 +233,30 @@ async function main(args: NormalizedArgv, { logger }: Options) {
     storage: { directory: storagePath, logs: logsPath },
   });
 
-  const selectedAppsResult = await resolveSelectedApps(
-    args,
-    apps,
-    needBackupApps,
-    config,
-    logger,
-    actionName,
-  );
+  const isPrune = Boolean(args.prune);
+  let selectedAppsResult: SelectedAppsResult | null;
+
+  if (isPrune) {
+    if (args.app?.length || args.select) {
+      logger.warn('--app and --select are ignored for prune; it always validates the whole backup.');
+    }
+
+    selectedAppsResult = {
+      hasConfigOverrides: false,
+      selectedAppNames: appNames,
+      selectedApps: apps,
+      selectionSource: 'config',
+    };
+  } else {
+    selectedAppsResult = await resolveSelectedApps(
+      args,
+      apps,
+      needBackupApps,
+      config,
+      logger,
+      actionName,
+    );
+  }
 
   if (!selectedAppsResult) {
     return;
@@ -296,14 +312,17 @@ async function main(args: NormalizedArgv, { logger }: Options) {
     return;
   }
 
+  let success = true;
+
   for (const appConfig of appsConfigs) {
     logger.info(`${actionPrefix} ${c.bold(appConfig.application.name)} ...`);
-    await backup(
+    const appSuccess = await backup(
       appConfig,
       finalConfig,
       {
         logger,
         logFile,
+        quiet,
         force: args.restore
           /**
            * extra care needs to be taken and double confirmation!!!
@@ -314,11 +333,17 @@ async function main(args: NormalizedArgv, { logger }: Options) {
         restore: args.restore,
       }
     );
-    logger.info(`${actionPrefix} ${c.bold(appConfig.application.name)} ${c.green('done')}\n`);
+    success = appSuccess && success;
+    logger.info(`${actionPrefix} ${c.bold(appConfig.application.name)} ${appSuccess ? c.green('done') : c.red('failed')}\n`);
   }
 
-  // successful backup finished
-  console.log(c.green().bold(`[${new Date().toLocaleTimeString(undefined, { hour12: false })}] Successful ${actionPrefix.toLowerCase()} finished!`));
+  const time = new Date().toLocaleTimeString(undefined, { hour12: false });
+  if (success) {
+    console.log(c.green().bold(`[${time}] Successful ${actionName} finished!`));
+  } else {
+    console.error(c.red().bold(`[${time}] ${actionPrefix} finished with errors`));
+    process.exitCode = 1;
+  }
 }
 
 export default main;

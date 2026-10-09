@@ -41,12 +41,15 @@ function isPlainObject(obj: unknown): obj is Obj {
 export function merge<T extends Obj, U extends Obj>(target: T, ...sources: U[]): T & U {
   sources.forEach((source) => {
     Object.keys(source).forEach((key) => {
-      const targetValue = target[key];
-      const sourceValue = source[key];
-      if (isPlainObject(targetValue) && isPlainObject(sourceValue)) {
-        (<Obj>target)[key] = merge(targetValue, sourceValue);
+      const targetValue = (target as Obj)[key];
+      const sourceValue = (source as Obj)[key];
+      if (isPlainObject(sourceValue)) {
+        // clone nested objects so merging never mutates a source (or the default config)
+        (target as Obj)[key] = isPlainObject(targetValue)
+          ? merge(targetValue, sourceValue)
+          : merge({}, sourceValue);
       } else {
-        (<Obj>target)[key] = sourceValue;
+        (target as Obj)[key] = sourceValue;
       }
     });
   });
@@ -69,7 +72,7 @@ export function getConfig({ logger }: { logger: LoggerType }) {
   logger.debug(`Config file found: ${configPath}`);
 
   const config = ini.parse(configContent);
-  return merge(defaultConfig, config);
+  return merge({}, defaultConfig, config);
 }
 
 // copied https://github.com/sindresorhus/is-path-inside/blob/6dd8543476cd100488a3cd83887970a8a03504e7/index.js
@@ -119,4 +122,15 @@ export function handleConfigFiles(appConfig: AppConfig) {
   }
 
   return finalConfigFiles;
+}
+
+export function normalizeAppArgs(app: string | string[] | undefined) {
+  if (!app) return undefined;
+
+  const appNames = (Array.isArray(app) ? app : [app])
+    .flatMap(item => String(item).split(','))
+    .map(item => item.trim())
+    .filter(Boolean);
+
+  return Array.from(new Set(appNames));
 }
